@@ -16,9 +16,20 @@ const moduleSchema: Schema<IModule> = new Schema<IModule>(
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
 
-const moduleModel: Model<IModule> = mongoose.model<IModule>("Module", moduleSchema);
+moduleSchema.virtual("lessons", {
+  ref: "Lesson",
+  localField: "_id",
+  foreignField: "module",
+});
+
+const moduleModel: Model<IModule> = mongoose.model<IModule>(
+  "Module",
+  moduleSchema
+);
 
 export default moduleModel;

@@ -24,8 +24,29 @@ const courseSchema: Schema<ICourse> = new Schema<ICourse>(
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
+
+courseSchema.set("toJSON", {
+  virtuals: true,
+  transform: (_doc, ret: any) => {
+    ret.id = ret._id;
+    delete ret._id;
+    delete ret.__v;
+  },
+});
+
+courseSchema.set("toObject", {
+  virtuals: true,
+});
+
+courseSchema.virtual("modules", {
+  ref: "Module",
+  localField: "_id",
+  foreignField: "course",
+});
 
 const course: Model<ICourse> = mongoose.model<ICourse>("Course", courseSchema);
 

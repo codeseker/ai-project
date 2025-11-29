@@ -2,6 +2,9 @@ import { z } from "zod";
 import { NextFunction, type Request, type Response } from "express";
 import { asyncHandler } from "../utils/async-handler";
 import { errorResponse } from "../utils/api";
+import User from "../models/user";
+import { comparePassword } from "../utils/bcrypt";
+import { UserStatus } from "../constants/enums/user";
 
 const registerSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters long"),
@@ -11,7 +14,12 @@ const registerSchema = z.object({
   lastName: z.string().min(2, "Last Name must be at least 2 characters"),
 });
 
-const registerValidation = asyncHandler(
+const loginSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+export const registerValidation = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const {
       username,
@@ -48,8 +56,66 @@ const registerValidation = asyncHandler(
       });
     }
 
+    const user = await User.findOne({ email });
+
+    if (user) {
+      return errorResponse(res, {
+        statusCode: 400,
+        message: "User with this email already exists",
+        errors: [{ field: "email", message: "Email already in use" }],
+      });
+    }
+
     next();
   }
 );
 
-export { registerValidation };
+export const loginValidation = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { email, password }: { email: string; password: string } = req.body;
+
+    const parseResult = loginSchema.safeParse({ email, password });
+    if (!parseResult.success) {
+      const errors = parseResult.error.issues.map((issue) => ({
+        field: issue.path[0],
+        message: issue.message,
+      }));
+      return errorResponse(res, {
+        statusCode: 400,
+        message: "Validation Error",
+        errors,
+      });
+    }
+
+    
+    const user = await User.findOne({ email });
+    
+    if (!user) {
+      return errorResponse(res, {
+        statusCode: 404,
+        message: "User not found",
+        errors: [{ field: "email", message: "User not found" }],
+      });
+    }
+
+    if(user.isDeleted || user.status === UserStatus.INACTIVE) {
+      return errorResponse(res, {
+        statusCode: 403,
+        message: "User account is inactive or deleted",
+        errors: [{ field: "email", message: "Account inactive or deleted" }],
+      });
+    }
+
+    const isSafe = await comparePassword(password, user.password);
+    
+    if (!isSafe) {
+      return errorResponse(res, {
+        statusCode: 401,
+        message: "Invalid credentials",
+        errors: [{ field: "password", message: "Incorrect password" }],
+      });
+    }
+
+    next();
+  }
+);

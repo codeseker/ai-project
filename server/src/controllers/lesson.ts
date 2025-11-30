@@ -4,7 +4,7 @@ import { errorResponse, successResponse } from "../utils/api";
 import { lessonPrompt } from "../constants/prompts/lesson";
 import { model } from "../config/ai";
 import moduleModel from "../models/modules";
-import lesson, { ILesson } from "../models/lesson";
+import lesson from "../models/lesson";
 
 export const create = asyncHandler(async (req: Request, res: Response) => {
   const {

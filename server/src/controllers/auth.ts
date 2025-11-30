@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../utils/async-handler";
 import { errorResponse, successResponse } from "../utils/api";
 import User from "../models/user";
-import { generateToken } from "../utils/jwt";
+import { generateToken, verifyToken } from "../utils/jwt";
 import { hashPassword } from "../utils/bcrypt";
 import Role from "../models/role";
 import { UserStatus } from "../constants/enums/user";
@@ -12,8 +12,8 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 
   const encryptedPassword = await hashPassword(password);
 
-  const role = await Role.findOne({name: "regular_user"});
-  if(!role) {
+  const role = await Role.findOne({ name: "regular_user" });
+  if (!role) {
     return errorResponse(res, {
       statusCode: 500,
       message: "User role not found. Please contact support.",
@@ -92,7 +92,6 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-
 export const getProfile = asyncHandler(async (req: Request, res: Response) => {
   const user = (req as any).user;
   return successResponse(res, {
@@ -102,4 +101,77 @@ export const getProfile = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+export const logout = asyncHandler(async (req: Request, res: Response) => {
+  const user = (req as any).user;
+  await User.findByIdAndUpdate(user._id, { refreshToken: null });
 
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: true, // Use true in production
+    sameSite: "strict",
+  });
+
+  return successResponse(res, {
+    statusCode: 200,
+    data: null,
+    message: "Logout successful",
+  });
+});
+
+export const refreshToken = asyncHandler(
+  async (req: Request, res: Response) => {
+    const token = req.cookies.refreshToken;
+
+    if (!token) {
+      return errorResponse(res, {
+        statusCode: 401,
+        message: "Refresh token is missing",
+      });
+    }
+
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      return errorResponse(res, {
+        statusCode: 403,
+        message: "Invalid refresh token",
+      });
+    }
+
+    if (typeof decoded === "string" || !("id" in decoded)) {
+      return errorResponse(res, {
+        statusCode: 401,
+        message: "Unauthorized: Invalid token payload",
+      });
+    }
+
+    const user = await User.findById(decoded.id);
+    if (!user || user.refreshToken !== token) {
+      return errorResponse(res, {
+        statusCode: 403,
+        message: "Refresh token not found or expired",
+      });
+    }
+
+    const newAccessToken = generateToken(
+      { id: user._id, email: user.email },
+      "2h"
+    );
+
+    const newRefreshToken = generateToken({ id: user._id }, "7d");
+
+    await User.findByIdAndUpdate(user._id, { refreshToken: newRefreshToken });
+
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: true, // true in production
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: "Token refreshed successfully",
+      data: { token: newAccessToken },
+    });
+  }
+);

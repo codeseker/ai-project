@@ -1,29 +1,26 @@
 import type { LoginSchema } from "@/components/login-form";
-import { throwApiException } from "@/utils/api-client";
-import { SuccessResponse, type ApiResponse } from "@/utils/api-response";
+import type { ApiResponse } from "@/types/api-response";
 import { asyncHandler } from "@/utils/async-handler";
 import axios from "axios";
 
 const baseUrl = import.meta.env.VITE_BACKEND_API_URL_LOCAL;
 
+
+export interface LoginResponse {
+    id: string;
+    name: string;
+    email: string;
+    refreshToken: string;
+    token: string;
+}
+
 export const login = asyncHandler(
-    async (data: LoginSchema): Promise<SuccessResponse<{ id: string, name: string, email: string, token: string } | null>> => {
+    async (data: LoginSchema): Promise<ApiResponse<LoginResponse>> => {
         const res = await axios.post(`${baseUrl}/auth/login`, data);
-        const response: ApiResponse<{ id: string, name: string, email: string, token: string }> = res.data;
 
-        if (!response.success) {
-            throwApiException({
-                statusCode: response.statusCode,
-                message: response.message,
-                errors: response.errors,
-            });
-        }
+        const response = res.data as ApiResponse<LoginResponse>;
 
-        return new SuccessResponse({
-            statusCode: response.statusCode,
-            data: response.data,
-            message: response.message,
-        });
+        return response; 
     }
 );
 

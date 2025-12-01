@@ -16,7 +16,7 @@ function ProtectedRoute() {
 
 
     useEffect(() => {
-        if (!user && location.pathname !== "/login") {
+        if (!user.user && location.pathname !== "/login") {
             navigate("/login", { replace: true });
             return;
         }
@@ -24,7 +24,8 @@ function ProtectedRoute() {
         const { token } = user;
         console.log('Token: ', token);
 
-        if (user && location.pathname === "/login") {
+        if (user.user && location.pathname === "/login") {
+            
             navigate("/", { replace: true });
         }
     }, [user, navigate, location.pathname]);

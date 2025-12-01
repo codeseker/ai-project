@@ -14,8 +14,6 @@ function Login() {
 
   const [loading, setLoading] = useState<boolean>(false);
 
-
-
   const handleLogin = async (data: LoginSchema) => {
     setLoading(true);
     const result = await login(data);
@@ -24,9 +22,6 @@ function Login() {
     if (!result) return;
 
     const finalUser = result.data;
-
-
-
 
     dispatch(setUser(finalUser));
     successToast("Login successful");

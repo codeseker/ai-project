@@ -3,8 +3,6 @@ import { useSelector, shallowEqual } from "react-redux";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import type { RootState } from "../store/store";
 
-
-
 function ProtectedRoute() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -22,12 +20,6 @@ function ProtectedRoute() {
         }
 
         const { token } = user;
-        console.log('Token: ', token);
-
-        if (user.user && location.pathname === "/login") {
-            
-            navigate("/", { replace: true });
-        }
     }, [user, navigate, location.pathname]);
 
     if (!user) return null;

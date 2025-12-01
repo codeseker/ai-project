@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { Link } from "react-router-dom"
 
 type LoginFormProps = {
   className?: string;
@@ -98,7 +99,7 @@ export function LoginForm({
                   Login with Google
                 </Button>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
+                  Don&apos;t have an account? <Link to="/register">Sign up</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>

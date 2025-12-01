@@ -1,25 +1,21 @@
 import React, { useEffect } from "react";
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import Login from "./pages/Login";
-import { useSelector } from "react-redux";
+import ProtectedRoute from "./routes/ProtectedRoute";
+
 
 function App() {
-  const user = useSelector((state: any) => state.user.user);
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!user) {
-      navigate("/login");
-    } else {
-      navigate("/");
-    }
-  }, []);
 
   return (
-    <div>
+    <div className="bg-gray-900 dark">
       <Routes>
+
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={<h1>Home Page</h1>} />
+        <Route element={<ProtectedRoute />} >
+          <Route path="/" element={<div>Home</div>} />
+          
+        </Route>
       </Routes>
     </div>
   );

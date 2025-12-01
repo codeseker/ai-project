@@ -5,11 +5,14 @@ interface IInitialState {
     id: string;
     name: string;
     email: string;
+    refreshToken?: string | null;
   };
+  token: string | null
 }
 
 const initialState: IInitialState = {
   user: null,
+  token: null
 };
 
 export const userSlice = createSlice({
@@ -17,7 +20,10 @@ export const userSlice = createSlice({
   initialState,
 
   reducers: {
-    setUser: (state, action) => {},
+    setUser: (state, action) => {
+      state.user = action.payload.user;
+      state.token = action.payload.token
+    },
     clearUser: (state) => {},
   },
 });

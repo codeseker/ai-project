@@ -20,7 +20,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     });
   }
 
-  const createdUser = new User({
+  const createdUser = await User.create({
     username,
     email,
     password: encryptedPassword,
@@ -37,8 +37,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 
   const refreshToken = generateToken({ id: createdUser._id }, "7d");
 
-  createdUser.refreshToken = refreshToken;
-  await createdUser.save();
+  User.findByIdAndUpdate(createdUser._id, { refreshToken });
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
@@ -50,7 +49,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
   return successResponse(res, {
     statusCode: 201,
     message: "User registered successfully.",
-    data: { user: createdUser.toJSON(), token: accessToken },
+    data: { user: createdUser.safeUser(), token: accessToken },
   });
 });
 
@@ -80,7 +79,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
-  const userData = user.toJSON();
+  const userData = user.safeUser();
 
   return successResponse(res, {
     statusCode: 200,

@@ -1,8 +1,7 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, { Schema, Document, Model, Types } from "mongoose";
 import { UserStatus } from "../constants/enums/user";
 
 export interface IUser extends Document {
-  id: string;
   username: string;
   password: string;
   first_name: string;
@@ -10,10 +9,18 @@ export interface IUser extends Document {
   email: string;
   status: UserStatus;
   isDeleted: boolean;
-  passwordResetToken?: string;
-  passwordResetExpires?: Date;
-  refreshToken?: string;
-  role?: mongoose.Types.ObjectId;
+  passwordResetToken?: string | null;
+  passwordResetExpires?: Date | null;
+  refreshToken?: string | null;
+  role?: Types.ObjectId | null;
+
+  // Custom instance method
+  safeUser(): {
+    id: string;
+    name: string;
+    email: string;
+    refreshToken?: string | null;
+  };
 }
 
 const UserSchema: Schema<IUser> = new Schema<IUser>(
@@ -23,22 +30,24 @@ const UserSchema: Schema<IUser> = new Schema<IUser>(
     first_name: { type: String, required: true },
     last_name: { type: String, required: true },
     email: { type: String, required: true },
-    status: { type: String, enum: UserStatus, default: UserStatus.PENDING },
+    status: { type: String, enum: Object.values(UserStatus), default: UserStatus.PENDING },
     isDeleted: { type: Boolean, default: false },
     passwordResetToken: { type: String, default: null },
     passwordResetExpires: { type: Date, default: null },
-    refreshToken: { type: String, default: null }, 
+    refreshToken: { type: String, default: null },
     role: { type: Schema.Types.ObjectId, ref: "Role", default: null },
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
   }
 );
 
+// 3️⃣ Indexes
 UserSchema.index({ email: 1 });
 
 UserSchema.set("toJSON", {
-  transform: (_doc, ret: Partial<IUser> & { _id?: any; __v?: any }) => {
+  transform: (doc, ret: any) => {
     ret.id = ret._id;
     delete ret._id;
     delete ret.__v;
@@ -47,6 +56,15 @@ UserSchema.set("toJSON", {
   },
 });
 
-const user: Model<IUser> = mongoose.model<IUser>("User", UserSchema);
+UserSchema.methods.safeUser = function () {
+  return {
+    id: this._id.toString(),
+    name: `${this.first_name} ${this.last_name}`,
+    email: this.email,
+    refreshToken: this.refreshToken || null,
+  };
+};
 
-export default user;
+const User: Model<IUser> = mongoose.model<IUser>("User", UserSchema);
+
+export default User;

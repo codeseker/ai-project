@@ -9,14 +9,9 @@ import lesson from "../models/lesson";
 export const create = asyncHandler(async (req: Request, res: Response) => {
   const {
     courseTitle,
-    courseTopic,
-    targetAudience,
-    level,
     moduleTitle,
     lessonTitle,
-    lessonDescription,
     lessonOrder,
-    estimatedMinutes,
     moduleId,
     lessonId,
   } = req.body;
@@ -73,14 +68,9 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
 
   const prompt = lessonPrompt({
     courseTitle,
-    courseTopic,
-    targetAudience,
-    level,
     moduleTitle,
     lessonTitle,
-    lessonDescription,
     lessonOrder,
-    estimatedMinutes,
     upcomingLessons,
   });
 

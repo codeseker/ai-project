@@ -46,10 +46,10 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
 
   const prompt = coursePrompt({
     userQuery,
-    level,
-    targetAudience,
-    duration,
-    topicType,
+    // level,
+    // targetAudience,
+    // duration,
+    // topicType,
   });
 
   const response = await model.generateContent({

@@ -3,6 +3,8 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 interface Course {
   id: string;
   title: string;
+  moduleId: string;
+  lessonId: string;
 }
 
 interface IInitialState {
@@ -27,7 +29,7 @@ export const courseSlice = createSlice({
     },
 
     removeCourse: (state, action: PayloadAction<string>) => {
-      state.courses = state.courses.filter(c => c.id !== action.payload);
+      state.courses = state.courses.filter((c) => c.id !== action.payload);
     },
   },
 });

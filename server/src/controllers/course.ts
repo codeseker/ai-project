@@ -41,6 +41,18 @@ export const index = asyncHandler(async (req: Request, res: Response) => {
 
   const courses = await courseModel
     .find(filter)
+    .populate({
+      path: "modules",
+      select: "id",
+      perDocumentLimit: 1, 
+      options: { sort: { order: 1 } }, 
+      populate: {
+        path: "lessons",
+        select: "id",
+        perDocumentLimit: 1, 
+        options: { sort: { order: 1 } }, 
+      },
+    })
     .skip(skip)
     .limit(limitNumber)
     .sort({ createdAt: -1 });

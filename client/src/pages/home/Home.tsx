@@ -65,6 +65,9 @@ export default function Home() {
       addCourse({
         id: res.data.courseId,
         title: res.data.title,
+        // think how you will give these 
+        moduleId: "",
+        lessonId: ""
       })
     );
   };
@@ -73,12 +76,12 @@ export default function Home() {
     <div className="w-full flex justify-center py-28 px-4">
       <div className="max-w-2xl w-full flex flex-col items-center space-y-10">
         {/* Title */}
-        <h1 className="text-5xl font-extrabold tracking-tight text-white text-center">
+        <h1 className="text-5xl font-extrabold tracking-tight text-center">
           What do you want to master today?
         </h1>
 
         {/* CTA */}
-        <p className="text-neutral-400 text-lg">
+        <p className="text-lg">
           Describe your topic, and let AI build a complete, personalized course
           for you.
         </p>
@@ -94,8 +97,8 @@ export default function Home() {
           >
             <input
               placeholder="Tell AI what course you want to generate..."
-              className="w-full bg-transparent text-neutral-200 text-lg 
-                     outline-none placeholder:text-neutral-500"
+              className="w-full bg-transparent  text-lg 
+                     outline-none"
               {...register("prompt")}
             />
 

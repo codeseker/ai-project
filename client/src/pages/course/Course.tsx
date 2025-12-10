@@ -13,10 +13,9 @@ export default function CourseDetails() {
   const user = useSelector((state: RootState) => state.user);
 
   const asyncHandler = useAsyncHandler();
-  const safeCourseView = asyncHandler(showCourse); // this wraps showCourse which can have error and will protect it
+  const safeCourseView = asyncHandler(showCourse);
 
   const [course, setCourse] = useState<any>(null);
-
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const getCourse = async () => {
@@ -30,7 +29,6 @@ export default function CourseDetails() {
 
   useEffect(() => {
     if (!user.token || !user.user) return;
-
     getCourse();
   }, [user]);
 
@@ -44,43 +42,48 @@ export default function CourseDetails() {
 
   return (
     <div className="space-y-8">
-      <Card className="bg-[#151515] border-gray-800">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-2xl">{course.title}</CardTitle>
+          <CardTitle className="text-2xl text-foreground">
+            {course.title}
+          </CardTitle>
         </CardHeader>
       </Card>
 
       <div className="space-y-4">
         {course.modules.map((m: any) => (
-          <Card className="bg-[#151515] border-gray-800" key={m.id}>
+          <Card className="bg-card border-border" key={m.id}>
             <CardHeader
               className="cursor-pointer flex flex-row items-center justify-between"
               onClick={() => toggleModule(m.id)}
             >
-              <CardTitle className="flex items-center gap-2 text-lg">
+              <CardTitle className="flex items-center gap-2 text-lg text-foreground">
                 {expanded === m.id ? (
-                  <ChevronDown className="w-5 h-5" />
+                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
                 ) : (
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 )}
                 {m.title}
               </CardTitle>
             </CardHeader>
 
-            {/* LESSON LIST */}
             {expanded === m.id && (
               <CardContent className="space-y-3 animate-in fade-in duration-200">
                 {m.lessons.map((lesson: any) => (
                   <div
                     key={lesson._id}
-                    className="flex items-center gap-3 p-3 rounded-md bg-[#1b1b1b] border border-gray-800 hover:bg-[#222] cursor-pointer"
+                    className="
+                      flex items-center gap-3 p-3 rounded-md
+                      bg-muted border border-border
+                      hover:bg-muted/70 cursor-pointer transition
+                    "
                   >
                     <Link
                       to={`/course/${id}/module/${m.id}/lesson/${lesson._id}`}
-                      className="flex items-center gap-x-1"
+                      className="flex items-center gap-x-2"
                     >
-                      <BookOpen className="w-4 h-4 text-blue-400" />
-                      <span>{lesson.title}</span>
+                      <BookOpen className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-foreground">{lesson.title}</span>
                     </Link>
                   </div>
                 ))}

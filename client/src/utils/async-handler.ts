@@ -28,17 +28,23 @@ export function useAsyncHandler() {
           "Something went wrong";
 
         if (statusCode === 401) {
-          const result = await refreshUser(auth.user?.refreshToken);
+          try {
+            const result = await refreshUser(auth.user?.refreshToken);
+            
+            if (!result.success) {
+              dispatch(clearUser());
+              navigate("/login", { replace: true });
+              return null;
+            }
 
-          if (!result.success) {
+            dispatch(setUser(result.data));
+
+            return await fn(...args);
+          } catch (error) {
             dispatch(clearUser());
-            navigate("/login");
+            navigate("/login", { replace: true });
             return null;
           }
-
-          dispatch(setUser(result.data));
-
-          return await fn(...args);
         }
 
         errorToast(msg);

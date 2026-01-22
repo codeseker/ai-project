@@ -4,7 +4,11 @@ import axios from "axios";
 const baseUrl = import.meta.env.VITE_BACKEND_API_URL_LOCAL;
 
 export interface LessonContentResponse {
-    content: string;
+  content: string;
+  navigation: {
+    nextModuleSlug: string | null;
+    nextLessonSlug: string | null;
+  };
 }
 
 export async function generateLessonContent(
@@ -17,7 +21,7 @@ export async function generateLessonContent(
     courseId: string;
     moduleId: string;
     lessonId: string;
-  }
+  },
 ): Promise<ApiResponse<LessonContentResponse>> {
   const res = await axios.post(
     `${baseUrl}/lesson/create`,
@@ -29,9 +33,9 @@ export async function generateLessonContent(
     {
       headers: {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-    }
+    },
   );
   return res.data as ApiResponse<LessonContentResponse>;
 }

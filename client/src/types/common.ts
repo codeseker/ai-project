@@ -1,6 +1,7 @@
 export interface Lesson {
     _id: string;
     title: string;
+    slug: string;
     module: string;
     content: string;
     isDeleted: boolean;
@@ -12,6 +13,7 @@ export interface Lesson {
 export interface Module {
     _id: string;
     title: string;
+    slug: string;
     description: string;
     course: string;
     lessons: Lesson[];
@@ -21,6 +23,7 @@ export interface Module {
 export interface Course {
     id: string;
     title: string;
+    slug: string;
     description: string;
     createdBy: string;
     isDeleted: boolean;

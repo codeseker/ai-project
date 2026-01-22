@@ -1,5 +1,4 @@
 import { SignupForm, type RegisterSchema } from '@/components/signup-form'
-import React from 'react'
 
 function Register() {
     const handleRegister = async (data: RegisterSchema) => {

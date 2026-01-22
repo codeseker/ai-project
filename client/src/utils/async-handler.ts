@@ -13,7 +13,7 @@ export function useAsyncHandler() {
   const auth = useSelector((state: RootState) => state.user);
 
   return function asyncHandler<T extends (...args: any[]) => Promise<any>>(
-    fn: T
+    fn: T,
   ) {
     return async (
       ...args: Parameters<T>
@@ -30,7 +30,7 @@ export function useAsyncHandler() {
         if (statusCode === 401) {
           try {
             const result = await refreshUser(auth.user?.refreshToken);
-            
+
             if (!result.success) {
               dispatch(clearUser());
               navigate("/login", { replace: true });
@@ -50,7 +50,7 @@ export function useAsyncHandler() {
         errorToast(msg);
         console.error("Async Error:", err);
 
-        return null;
+        throw err;
       }
     };
   };

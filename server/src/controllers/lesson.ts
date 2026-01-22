@@ -10,7 +10,12 @@ import course from "../models/course";
 export const create = asyncHandler(async (req: Request, res: Response) => {
   const { courseId, moduleId, lessonId } = req.body;
 
-  const courseData = await course.findById(courseId);
+  const courseData = await course.findOne({
+    slug: courseId,
+    isDeleted: false,
+    createdBy: (req as any).user.id,
+  });
+
   if (!courseData) {
     return errorResponse(res, {
       statusCode: 404,
@@ -19,10 +24,14 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const moduleData = await moduleModel
-    .findById(moduleId)
+    .findOne({
+      slug: moduleId,
+      isDeleted: false,
+      course: courseData._id,
+    })
     .populate({
       path: "lessons",
-      select: "title description order",
+      select: "title description order slug",
     })
     .exec();
 
@@ -33,13 +42,21 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
     });
   }
 
-  const lessonData = await lesson.findById(lessonId);
+  const lessonData = await lesson.findOne({
+    slug: lessonId,
+    isDeleted: false,
+    module: moduleData._id,
+  });
+
   if (!lessonData) {
     return errorResponse(res, {
       statusCode: 404,
       message: "Lesson not found",
     });
   }
+
+  /* ---------------- EXISTING CONTENT CHECK ---------------- */
+
   const content = lessonData.content;
   let isEmpty = false;
 
@@ -53,20 +70,71 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
     isEmpty = true;
   }
 
+  /* ---------------- ADD: NEXT LESSON LOGIC ---------------- */
+
+  const lessons = ((moduleData as any).lessons ?? []).sort(
+    (a: any, b: any) => a.order - b.order,
+  );
+
+  const currentIndex = lessons.findIndex((l: any) => l.slug === lessonId);
+
+  const nextLessonInSameModule =
+    currentIndex !== -1 ? lessons[currentIndex + 1] : null;
+
+  let nextModuleSlug: string | null = null;
+  let nextLessonSlug: string | null = null;
+
+  if (nextLessonInSameModule) {
+    nextModuleSlug = (moduleData as any).slug;
+    nextLessonSlug = nextLessonInSameModule.slug;
+  }
+
+  /* -------------------------------------------------------- */
+
   if (!isEmpty) {
     return successResponse(res, {
       statusCode: 200,
       message: "Lesson Created Successfully",
-      data: {content},
+      data: {
+        content,
+        navigation: {
+          nextModuleSlug,
+          nextLessonSlug,
+        },
+      },
     });
   }
 
-  const upcomingLessons = ((moduleData as any).lessons ?? [])
-    .filter(
-      (lesson: any) =>
-        lesson._id.toString() !== lessonId && lesson.order > lessonData.order
-    )
-    .sort((a: any, b: any) => a.order - b.order);
+  /* ---------------- ADD: NEXT MODULE FALLBACK ---------------- */
+
+  if (!nextLessonInSameModule) {
+    const nextModule = await moduleModel
+      .findOne({
+        course: courseData._id,
+        isDeleted: false,
+        order: { $gt: (moduleData as any).order },
+      })
+      .sort({ order: 1 })
+      .select("slug")
+      .populate({
+        path: "lessons",
+        match: { isDeleted: false },
+        options: { sort: { order: 1 }, limit: 1 },
+        select: "slug",
+      })
+      .lean();
+
+    if (nextModule && (nextModule as any).lessons?.length) {
+      nextModuleSlug = nextModule.slug;
+      nextLessonSlug = (nextModule as any).lessons[0].slug;
+    }
+  }
+
+  /* ---------------------------------------------------------- */
+
+  const upcomingLessons = lessons.filter(
+    (l: any) => l.slug !== lessonId && l.order > lessonData.order,
+  );
 
   const prompt = lessonPrompt({
     courseTitle: courseData.title,
@@ -90,7 +158,7 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
   const cleaned = JSON.parse(
     JSON.stringify(text)
       .replace(/^```(json)?/i, "")
-      .replace(/```$/i, "")
+      .replace(/```$/i, ""),
   ).replace(/\\n/g, "\n");
 
   lessonData.content = cleaned;
@@ -99,6 +167,12 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
   return successResponse(res, {
     statusCode: 200,
     message: "Lesson created successfully",
-    data: { content: cleaned },
+    data: {
+      content: cleaned,
+      navigation: {
+        nextModuleSlug,
+        nextLessonSlug,
+      },
+    },
   });
 });

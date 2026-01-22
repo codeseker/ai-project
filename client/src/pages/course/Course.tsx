@@ -79,7 +79,7 @@ export default function CourseDetails() {
                     "
                   >
                     <Link
-                      to={`/course/${id}/module/${m.id}/lesson/${lesson._id}`}
+                      to={`/course/${id}/module/${m.slug}/lesson/${lesson.slug}`}
                       className="flex items-center gap-x-2"
                     >
                       <BookOpen className="w-4 h-4 text-muted-foreground" />

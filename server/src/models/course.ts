@@ -1,7 +1,9 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
+import { generateUniqueSlug } from "../utils/helper-function";
 
 export interface ICourse extends Document {
   title: string;
+  slug: string;
   description: string;
   createdBy: mongoose.Types.ObjectId;
   isDeleted: boolean;
@@ -16,6 +18,7 @@ export interface ICourse extends Document {
 const courseSchema: Schema<ICourse> = new Schema<ICourse>(
   {
     title: { type: String, required: true },
+    slug: { type: String, required: true, unique: true, index: true },
     description: { type: String, required: true },
     createdBy: { type: mongoose.Types.ObjectId, ref: "User", required: true },
     isDeleted: { type: Boolean, default: false },
@@ -30,8 +33,20 @@ const courseSchema: Schema<ICourse> = new Schema<ICourse>(
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  }
+  },
 );
+
+courseSchema.pre<ICourse>("validate", async function (next) {
+  if (!this.isModified("title")) return;
+
+  const Model = this.constructor as Model<ICourse>;
+
+  this.slug = await generateUniqueSlug({
+    model: Model,
+    title: this.title,
+    id: this._id.toString(),
+  });
+});
 
 courseSchema.set("toJSON", {
   virtuals: true,

@@ -1,11 +1,4 @@
-"use client";
-
-import {
-    BookIcon,
-  Folder,
-  MoreHorizontal,
-  Trash2,
-} from "lucide-react";
+import { BookIcon, Folder, MoreHorizontal, Trash2 } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -24,25 +17,23 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
+import useDeleteCourse from "@/hooks/courses/useDeleteCourse";
+import type { ICourseItem } from "@/store/slices/course";
 
-export function Courses({
-  projects,
-}: {
-  projects: {
-    id: string;
-    title: string;
-    moduleId: string;
-    lessonId: string;
-  }[];
-}) {
+export function Courses({ projects }: { projects: ICourseItem[] }) {
   const { isMobile } = useSidebar();
+  const { mutateAsync: deleteCourse } = useDeleteCourse();
+
+  const handleDelete = async (id: string) => {
+    await deleteCourse(id);
+  };
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>My Courses</SidebarGroupLabel>
       <SidebarMenu>
         {projects.map((item) => {
-            let url = `/course/${item.id}/module/${item.moduleId}/lesson/${item.lessonId}`
+          let url = `/course/${item.slug}/module/${item.moduleSlug}/lesson/${item.lessonSlug}`;
           return (
             <SidebarMenuItem key={item.id}>
               <SidebarMenuButton asChild>
@@ -65,10 +56,12 @@ export function Courses({
                 >
                   <DropdownMenuItem>
                     <Folder className="text-muted-foreground" />
-                    <Link to={`/course/${item.id}`} ><span>View Course</span></Link>
+                    <Link to={`/course/${item.slug}`}>
+                      <span>View Course</span>
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDelete(item.slug)}>
                     <Trash2 className="text-muted-foreground" />
                     <span>Delete Course</span>
                   </DropdownMenuItem>
@@ -77,12 +70,6 @@ export function Courses({
             </SidebarMenuItem>
           );
         })}
-        <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
-            <MoreHorizontal className="text-sidebar-foreground/70" />
-            <span>More</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
       </SidebarMenu>
     </SidebarGroup>
   );

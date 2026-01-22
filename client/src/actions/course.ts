@@ -1,25 +1,16 @@
 import axios from "axios";
 import type { ApiResponse } from "@/types/api-response";
-import type { Course } from "@/types/common";
+import type {
+  CreateCourseResponse,
+  DeleteCourseResponse,
+  MultipleCoursesResponse,
+  SingleCourseResponse,
+} from "@/types/course-api/course.types";
 
 const baseUrl = import.meta.env.VITE_BACKEND_API_URL_LOCAL;
 
-export interface SingleCourseResponse {
-  course: Course;
-}
-
-export interface MultipleCoursesResponse {
-  courses: Course[];
-}
-
-export interface CreateCourseResponse {
-  courseId: string;
-  title: string;
-  description: string;
-}
-
 export async function indexCourses(
-  token: string
+  token: string,
 ): Promise<ApiResponse<MultipleCoursesResponse>> {
   const headers = {
     Authorization: `Bearer ${token}`,
@@ -32,7 +23,7 @@ export async function indexCourses(
 
 export async function showCourse(
   token: string,
-  { courseId }: { courseId: string }
+  { courseId }: { courseId: string },
 ): Promise<ApiResponse<SingleCourseResponse>> {
   const headers = {
     Authorization: `Bearer ${token}`,
@@ -51,7 +42,7 @@ export async function createCourse(
     prompt,
   }: {
     prompt: string;
-  }
+  },
 ): Promise<ApiResponse<CreateCourseResponse>> {
   const headers = {
     Authorization: `Bearer ${token}`,
@@ -61,7 +52,26 @@ export async function createCourse(
   const res = await axios.post(
     `${baseUrl}/course/create`,
     { prompt },
-    { headers }
+    { headers },
   );
   return res.data as ApiResponse<CreateCourseResponse>;
+}
+
+export async function deleteCourse(
+  token: string,
+  {
+    courseId,
+  }: {
+    courseId: string;
+  },
+): Promise<ApiResponse<DeleteCourseResponse>> {
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+
+  const res = await axios.delete(`${baseUrl}/course/${courseId}/delete`, {
+    headers,
+  });
+  return res.data as ApiResponse<DeleteCourseResponse>;
 }

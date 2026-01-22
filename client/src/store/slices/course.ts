@@ -1,14 +1,17 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-interface Course {
+export interface ICourseItem {
   id: string;
+  slug: string;
   title: string;
   moduleId: string;
+  moduleSlug: string;
   lessonId: string;
+  lessonSlug: string;
 }
 
 interface IInitialState {
-  courses: Course[];
+  courses: ICourseItem[];
 }
 
 const initialState: IInitialState = {
@@ -20,11 +23,11 @@ export const courseSlice = createSlice({
   initialState,
 
   reducers: {
-    addCourse: (state, action: PayloadAction<Course>) => {
+    addCourse: (state, action: PayloadAction<ICourseItem>) => {
       state.courses.push(action.payload);
     },
 
-    setCourses: (state, action: PayloadAction<Course[]>) => {
+    setCourses: (state, action: PayloadAction<ICourseItem[]>) => {
       state.courses = action.payload;
     },
 

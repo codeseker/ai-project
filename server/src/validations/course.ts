@@ -41,7 +41,7 @@ export const indexValidation = asyncHandler(
     }
 
     next();
-  }
+  },
 );
 
 const createCourseSchema = z.object({
@@ -69,7 +69,7 @@ export const createValidation = asyncHandler(
     }
 
     next();
-  }
+  },
 );
 
 export const courseIdValidation = asyncHandler(
@@ -85,14 +85,7 @@ export const courseIdValidation = asyncHandler(
     }
 
     const schema = z.object({
-      courseId: z.string().refine(
-        (value: string) => {
-          return mongoose.Types.ObjectId.isValid(value);
-        },
-        {
-          message: "Invalid MongoDB ObjectId",
-        }
-      ),
+      courseId: z.string().nonempty("Course ID is required"),
     });
 
     const parseResult = schema.safeParse({
@@ -112,7 +105,7 @@ export const courseIdValidation = asyncHandler(
     }
 
     const courseData = await Course.findOne({
-      _id: courseId,
+      slug: courseId,
       isDeleted: false,
       createdBy: (req as any).user.id,
     });
@@ -123,10 +116,11 @@ export const courseIdValidation = asyncHandler(
         message: "Course not found",
       });
     }
-    
+
     next();
-  }
+  },
 );
+
 
 export function validateQuery(query: string): {
   isValid: boolean;
@@ -247,7 +241,7 @@ export function validateQuery(query: string): {
 export async function validateUserQuery(
   model: GenerativeModel,
   securityChecks: string,
-  userQuery: string
+  userQuery: string,
 ): Promise<{ isValid: boolean; reasons: string[] }> {
   try {
     const checks = await model.generateContent({

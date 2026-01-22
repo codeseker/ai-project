@@ -1,13 +1,13 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import { useAsyncHandler } from "@/utils/async-handler";
 import { createCourse } from "@/actions/course";
-import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
-import { useEffect, useState } from "react";
-import {  successToast } from "@/utils/toaster";
+import { successToast } from "@/utils/toaster";
 import { addCourse } from "@/store/slices/course";
 
 const courseSchema = z.object({
@@ -18,15 +18,14 @@ type CourseFormData = z.infer<typeof courseSchema>;
 
 export default function Home() {
   const asyncHandler = useAsyncHandler();
-
   const user = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
 
   const [showError, setShowError] = useState(false);
-
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
 
   const safeCourseCreation = asyncHandler(createCourse);
+
   const {
     register,
     handleSubmit,
@@ -38,37 +37,31 @@ export default function Home() {
   useEffect(() => {
     if (errors.prompt) {
       setShowError(true);
-
-      const timer = setTimeout(() => {
-        setShowError(false);
-      }, 2000); 
-
+      const timer = setTimeout(() => setShowError(false), 2000);
       return () => clearTimeout(timer);
     }
   }, [errors.prompt]);
 
   const onSubmit = async (data: CourseFormData) => {
-    if (!user.token) {
-      return;
-    }
+    if (!user.token) return;
 
     setLoading(true);
     const res = await safeCourseCreation(user.token, data);
     setLoading(false);
 
+    if (!res?.data) return;
 
-    if (!res || !res.data) {
-      return;
-    }
     successToast("Course created successfully");
     dispatch(
       addCourse({
         id: res.data.courseId,
         title: res.data.title,
-        // think how you will give these 
         moduleId: "",
-        lessonId: ""
-      })
+        lessonId: "",
+        slug: res.data.slug,
+        lessonSlug: "",
+        moduleSlug: "",
+      }),
     );
   };
 
@@ -76,40 +69,50 @@ export default function Home() {
     <div className="w-full flex justify-center py-28 px-4">
       <div className="max-w-2xl w-full flex flex-col items-center space-y-10">
         {/* Title */}
-        <h1 className="text-5xl font-extrabold tracking-tight text-center">
+        <h1 className="text-5xl font-extrabold tracking-tight text-center text-foreground">
           What do you want to master today?
         </h1>
 
         {/* CTA */}
-        <p className="text-lg">
+        <p className="text-lg text-muted-foreground text-center">
           Describe your topic, and let AI build a complete, personalized course
           for you.
         </p>
 
-        {/* Input Bar */}
+        {/* Input */}
         <form onSubmit={handleSubmit(onSubmit)} className="w-full relative">
           <div
-            className="flex items-center w-full bg-neutral-900/70 rounded-full 
-                   pl-6 pr-14 py-4 border border-neutral-700/40
-                   shadow-[0_0_20px_rgba(0,0,0,0.25)]
-                   backdrop-blur-xl transition-all
-                   focus-within:border-neutral-500"
+            className="
+              flex items-center w-full rounded-full
+              pl-6 pr-14 py-4
+              bg-card border border-border
+              shadow-sm
+              transition
+              focus-within:ring-2 focus-within:ring-ring
+            "
           >
             <input
               placeholder="Tell AI what course you want to generate..."
-              className="w-full bg-transparent  text-lg 
-                     outline-none"
+              className="
+                w-full bg-transparent text-lg
+                text-foreground placeholder:text-muted-foreground
+                outline-none
+              "
               {...register("prompt")}
             />
 
-            {/* Send Button */}
             <button
               type="submit"
               disabled={loading}
-              className="absolute right-2 flex items-center justify-center
-                    w-10 h-10 rounded-full 
-                    bg-neutral-800 hover:bg-neutral-700 
-                    transition-all"
+              className="
+                absolute right-2
+                flex items-center justify-center
+                w-10 h-10 rounded-full
+                bg-primary text-primary-foreground
+                hover:opacity-90
+                transition
+                disabled:opacity-50
+              "
             >
               {loading ? (
                 "…"
@@ -120,7 +123,7 @@ export default function Home() {
                   viewBox="0 0 24 24"
                   strokeWidth="1.5"
                   stroke="currentColor"
-                  className="w-5 h-5 text-neutral-200"
+                  className="w-5 h-5"
                 >
                   <path
                     strokeLinecap="round"
@@ -133,8 +136,9 @@ export default function Home() {
           </div>
         </form>
 
+        {/* Error */}
         {showError && errors.prompt && (
-          <div className="flex items-center text-red-400 text-sm font-medium mt-2 gap-2">
+          <div className="flex items-center gap-2 text-sm font-medium text-destructive">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="w-4 h-4"

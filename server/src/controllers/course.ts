@@ -43,14 +43,14 @@ export const index = asyncHandler(async (req: Request, res: Response) => {
     .find(filter)
     .populate({
       path: "modules",
-      select: "id",
-      perDocumentLimit: 1, 
-      options: { sort: { order: 1 } }, 
+      select: "id slug",
+      perDocumentLimit: 1,
+      options: { sort: { order: 1 } },
       populate: {
         path: "lessons",
-        select: "id",
-        perDocumentLimit: 1, 
-        options: { sort: { order: 1 } }, 
+        select: "id slug",
+        perDocumentLimit: 1,
+        options: { sort: { order: 1 } },
       },
     })
     .skip(skip)
@@ -108,6 +108,7 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
       title: metadata.title,
       description: metadata.description,
       courseId: courseData._id,
+      slug: courseData.slug,
     },
     flag: true,
   });
@@ -115,7 +116,7 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
   // Fire-and-forget async processing with timeout protection
   process.nextTick(async () => {
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Course processing timeout")), 30000)
+      setTimeout(() => reject(new Error("Course processing timeout")), 30000),
     );
 
     try {
@@ -137,9 +138,8 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
             course: courseData._id,
           }));
 
-          const insertedModules = await moduleModel.insertMany(
-            moduleInsertData
-          );
+          const insertedModules =
+            await moduleModel.insertMany(moduleInsertData);
 
           const moduleMap = new Map<string, string>();
           insertedModules.forEach((m) => {
@@ -153,7 +153,7 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
               order: les.order,
               description: les.description,
               estimatedMinutes: les.estimatedMinutes,
-            }))
+            })),
           );
 
           await lessonModel.insertMany(lessonsInsertData);
@@ -170,16 +170,16 @@ export const show = asyncHandler(async (req: Request, res: Response) => {
 
   const courseData = await courseModel
     .findOne({
-      _id: courseId,
+      slug: courseId,
       isDeleted: false,
       createdBy: (req as any).user.id,
     })
     .populate({
       path: "modules",
-      select: "title description",
+      select: "title description slug",
       populate: {
         path: "lessons",
-        select: "title order description estimatedMinutes",
+        select: "title order description estimatedMinutes slug",
       },
     });
 
@@ -196,29 +196,35 @@ export const remove = asyncHandler(async (req: Request, res: Response) => {
 
   const courseData = await courseModel.findOneAndUpdate(
     {
-      _id: courseId,
+      slug: courseId,
       isDeleted: false,
       createdBy: (req as any).user.id,
     },
     {
       isDeleted: true,
-    }
+    },
   );
+  if (!courseData) {
+    return errorResponse(res, {
+      statusCode: 404,
+      message: "Course not found",
+    });
+  }
 
   const allModules = await moduleModel.updateMany(
-    { course: courseId, isDeleted: false },
-    { isDeleted: true }
+    { course: courseData._id, isDeleted: false },
+    { isDeleted: true },
   );
 
   const moduleIds = await moduleModel
-    .find({ course: courseId }, { _id: 1 })
+    .find({ course: courseData._id }, { _id: 1 })
     .lean();
 
   const ids = moduleIds.map((m) => m._id);
 
   await lessonModel.updateMany(
     { module: { $in: ids }, isDeleted: false },
-    { isDeleted: true }
+    { isDeleted: true },
   );
 
   return successResponse(res, {

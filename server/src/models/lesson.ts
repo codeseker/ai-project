@@ -1,7 +1,9 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
+import { generateUniqueSlug } from "../utils/helper-function";
 
 export interface ILesson extends Document {
   title: string;
+  slug: string;
   content: mongoose.Schema.Types.Mixed;
   module: mongoose.Types.ObjectId;
   isDeleted: boolean;
@@ -13,6 +15,7 @@ export interface ILesson extends Document {
 const lessonSchema: Schema<ILesson> = new Schema<ILesson>(
   {
     title: { type: String, required: true },
+    slug: { type: String, required: true, unique: true, index: true },
     content: { type: mongoose.Schema.Types.Mixed, default: "" },
     module: { type: mongoose.Types.ObjectId, ref: "Module", required: true },
     isDeleted: { type: Boolean, default: false },
@@ -22,8 +25,20 @@ const lessonSchema: Schema<ILesson> = new Schema<ILesson>(
   },
   {
     timestamps: true,
-  }
+  },
 );
+
+lessonSchema.pre<ILesson>("validate", async function (next) {
+  if (!this.isModified("title")) return;
+
+  const Model = this.constructor as Model<ILesson>;
+
+  this.slug = await generateUniqueSlug({
+    model: Model,
+    title: this.title,
+    id: this._id.toString(),
+  });
+});
 
 const lesson: Model<ILesson> = mongoose.model<ILesson>("Lesson", lessonSchema);
 

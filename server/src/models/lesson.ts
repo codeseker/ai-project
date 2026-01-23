@@ -10,6 +10,7 @@ export interface ILesson extends Document {
   order: number;
   description: string;
   estimatedMinutes: number;
+  ytVideos: string[];
 }
 
 const lessonSchema: Schema<ILesson> = new Schema<ILesson>(
@@ -22,6 +23,7 @@ const lessonSchema: Schema<ILesson> = new Schema<ILesson>(
     order: { type: Number, required: false },
     description: { type: String, required: false },
     estimatedMinutes: { type: Number, required: false },
+    ytVideos: { type: [String], required: false },
   },
   {
     timestamps: true,

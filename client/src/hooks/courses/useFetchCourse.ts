@@ -1,10 +1,9 @@
 import { indexCourses } from "@/actions/course";
-import { setCourses, type ICourseItem } from "@/store/slices/course";
+import { type ICourseItem } from "@/store/slices/course";
 import type { RootState } from "@/store/store";
 import { useAsyncHandler } from "@/utils/async-handler";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 export default function useCourseFetch() {
   const asyncHandler = useAsyncHandler();
@@ -16,19 +15,27 @@ export default function useCourseFetch() {
     queryFn: () => safeIndexCourses(user?.token ?? ""),
     enabled: !!user?.token,
     select: (res) => {
-      if (!res) {
-        return;
-      }
+      if (!res?.data?.courses) return [];
 
-      return (res.data?.courses ?? []).map((course) => ({
-        id: course.id,
-        title: course.title,
-        moduleId: course.modules[0]._id,
-        lessonId: course.modules[0].lessons[0]._id,
-        slug: course.slug,
-        moduleSlug: course.modules[0].slug,
-        lessonSlug: course.modules[0].lessons[0].slug,
-      }));
+      return res.data.courses
+        .filter((course) => course.modules?.length)
+        .map((course) => {
+          const module = course.modules[0];
+          const lesson = module?.lessons?.[0];
+
+          if (!lesson) return null;
+
+          return {
+            id: course.id,
+            title: course.title,
+            moduleId: module._id,
+            lessonId: lesson._id,
+            slug: course.slug,
+            moduleSlug: module.slug,
+            lessonSlug: lesson.slug,
+          } as ICourseItem;
+        })
+        .filter(Boolean);
     },
   });
 

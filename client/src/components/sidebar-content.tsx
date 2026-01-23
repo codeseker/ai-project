@@ -20,7 +20,7 @@ import { Link } from "react-router-dom";
 import useDeleteCourse from "@/hooks/courses/useDeleteCourse";
 import type { ICourseItem } from "@/store/slices/course";
 
-export function Courses({ projects }: { projects: ICourseItem[] }) {
+export function Courses({ projects }: { projects: (ICourseItem | null)[] }) {
   const { isMobile } = useSidebar();
   const { mutateAsync: deleteCourse } = useDeleteCourse();
 
@@ -33,6 +33,8 @@ export function Courses({ projects }: { projects: ICourseItem[] }) {
       <SidebarGroupLabel>My Courses</SidebarGroupLabel>
       <SidebarMenu>
         {projects.map((item) => {
+          if (!item) return null;
+
           let url = `/course/${item.slug}/module/${item.moduleSlug}/lesson/${item.lessonSlug}`;
           return (
             <SidebarMenuItem key={item.id}>

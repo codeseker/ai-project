@@ -13,6 +13,7 @@ import {
   generateLessonContent,
   type LessonContentResponse,
 } from "@/actions/lesson";
+import MarkdownRenderer from "@/components/blocks/MarkdownRendrer";
 
 export default function Lesson() {
   const user = useSelector((state: RootState) => state.user);
@@ -194,16 +195,74 @@ export default function Lesson() {
     ),
   };
 
+  const data = `# Pass and Utilize Props for Dynamic Component Data
+
+## 🔍 Why This Lesson Matters
+
+Imagine you're building a website with many similar elements—like a list of products, user profiles, or blog posts.
+
+If you had to create a **separate component for each individual item**, your codebase would quickly become:
+
+- Hard to maintain
+- Repetitive
+- Error-prone
+
+---
+
+## ❌ The Wrong Approach
+
+Creating a different component for every product:
+
+- LaptopProductCard
+- MonitorProductCard
+- KeyboardProductCard
+
+This leads to unnecessary duplication.
+
+---
+
+## ✅ The Right Approach: Reusable Components
+
+Instead, create **one reusable component** and pass data using **props**.
+
+### Example
+
+\`\`\`tsx
+<ProductCard
+  name="Laptop"
+  price={75000}
+  inStock={true}
+/>
+\`\`\`
+
+Now the same component can be reused for different products just by changing the props.
+
+---
+
+## 🧠 Key Takeaways
+
+- Props make components **dynamic**
+- One component can handle **multiple data variations**
+- Cleaner, more **maintainable code**
+
+---
+
+## 🚀 Summary
+
+Using props correctly helps you build scalable and reusable UI components.
+`;
+
   return (
     <div className="w-full flex justify-center px-6 py-10">
       <div className="w-full max-w-5xl prose dark:prose-invert">
-        <ReactMarkdown
+        {/* <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           rehypePlugins={[rehypeRaw, rehypeHighlight]}
           components={markdownComponents}
         >
           {content}
-        </ReactMarkdown>
+        </ReactMarkdown> */}
+        <MarkdownRenderer content={content} />
 
         {/* Navigation */}
         <div className="flex justify-between mt-12 pt-6 border-t border-border">

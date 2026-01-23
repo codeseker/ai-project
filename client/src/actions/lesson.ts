@@ -9,6 +9,7 @@ export interface LessonContentResponse {
     nextModuleSlug: string | null;
     nextLessonSlug: string | null;
   };
+  ytVideos: string[];
 }
 
 export async function generateLessonContent(

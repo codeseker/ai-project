@@ -12,7 +12,7 @@ export const fetchVideos = asyncHandler(async (req: Request, res: Response) => {
     });
   }
 
-  const videos = await axios.get(
+  const videos: any = await axios.get(
     `https://www.googleapis.com/youtube/v3/search?key=${process.env.YOUTUBE_API_KEY}&type=video&q=${search}`,
   );
   const allIds = videos.data.items.map((item: any) => item.id.videoId);

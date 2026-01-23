@@ -23,10 +23,10 @@ export default function Page() {
         {/* ---------- HEADER ---------- */}
         <header
           className="
-            sticky top-0 z-10
-            flex h-14 items-center gap-2
+            sticky top-0 z-20
+            flex h-14 items-center gap-3
             border-b border-border
-            bg-background
+            bg-background/80 backdrop-blur
             px-4
           "
         >
@@ -37,14 +37,24 @@ export default function Page() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/">App</BreadcrumbLink>
+                <BreadcrumbLink
+                  href="/"
+                  className="text-sm text-muted-foreground hover:text-foreground transition"
+                >
+                  App
+                </BreadcrumbLink>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </header>
 
         {/* ---------- CONTENT ---------- */}
-        <main className="flex-1 overflow-auto p-4">
+        <main
+          className="
+            flex-1 overflow-y-auto
+            bg-background
+          "
+        >
           <Outlet />
         </main>
       </SidebarInset>

@@ -4,17 +4,21 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import LoginGuard from "./routes/LoginGuard";
 import Home from "./pages/home/Home";
 import Register from "./pages/auth/Register";
-import Layout from "./components/layout";
 import CourseDetails from "./pages/course/Course";
 import Lesson from "./pages/lesson/Lesson";
+import AppLayout from "./components/layout/AppLayout";
+import CourseLayout from "./components/layout/CourseLayout";
 
 function App() {
   return (
     <div>
       <Routes>
         <Route element={<ProtectedRoute />}>
-          <Route element={<Layout />}>
+          <Route element={<AppLayout />}>
             <Route path="/" element={<Home />} />
+          </Route>
+
+          <Route element={<CourseLayout />}>
             <Route path="/course/:id" element={<CourseDetails />} />
             <Route
               path="/course/:courseId/module/:modId/lesson/:lessonId"
@@ -22,6 +26,7 @@ function App() {
             />
           </Route>
         </Route>
+
         <Route
           path="/login"
           element={

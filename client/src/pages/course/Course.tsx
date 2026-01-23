@@ -9,7 +9,6 @@ import type { RootState } from "@/store/store";
 
 export default function CourseDetails() {
   const { id } = useParams();
-
   const user = useSelector((state: RootState) => state.user);
 
   const asyncHandler = useAsyncHandler();
@@ -22,13 +21,12 @@ export default function CourseDetails() {
     const res = await safeCourseView(user.token as string, {
       courseId: id as string,
     });
-    const data = res?.data;
 
-    setCourse(data?.course);
+    setCourse(res?.data?.course);
   };
 
   useEffect(() => {
-    if (!user.token || !user.user) return;
+    if (!user.token) return;
     getCourse();
   }, [user]);
 
@@ -37,60 +35,68 @@ export default function CourseDetails() {
   };
 
   if (!course) {
-    return <>Invalid Id or Course Not found</>;
+    return (
+      <div className="text-muted-foreground">
+        Invalid Id or Course Not found
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-8">
-      <Card className="bg-card border-border">
-        <CardHeader>
-          <CardTitle className="text-2xl text-foreground">
-            {course.title}
-          </CardTitle>
-        </CardHeader>
-      </Card>
+    <div className="bg-background px-6 py-10 flex justify-center">
+      <div className="w-full max-w-4xl space-y-8">
+        {/* Course Header */}
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold text-foreground">{course.title}</h1>
+          <p className="text-muted-foreground">
+            {course.modules.length} modules
+          </p>
+        </div>
 
-      <div className="space-y-4">
-        {course.modules.map((m: any) => (
-          <Card className="bg-card border-border" key={m.id}>
-            <CardHeader
-              className="cursor-pointer flex flex-row items-center justify-between"
-              onClick={() => toggleModule(m.id)}
-            >
-              <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-                {expanded === m.id ? (
-                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                )}
-                {m.title}
-              </CardTitle>
-            </CardHeader>
+        {/* Modules */}
+        <div className="space-y-4">
+          {course.modules.map((m: any) => (
+            <Card key={m.id} className="border-border">
+              <CardHeader
+                onClick={() => toggleModule(m.id)}
+                className="
+                  cursor-pointer flex flex-row items-center justify-between
+                  hover:bg-accent transition rounded-md
+                "
+              >
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  {expanded === m.id ? (
+                    <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  )}
+                  {m.title}
+                </CardTitle>
+              </CardHeader>
 
-            {expanded === m.id && (
-              <CardContent className="space-y-3 animate-in fade-in duration-200">
-                {m.lessons.map((lesson: any) => (
-                  <div
-                    key={lesson._id}
-                    className="
-                      flex items-center gap-3 p-3 rounded-md
-                      bg-muted border border-border
-                      hover:bg-muted/70 cursor-pointer transition
-                    "
-                  >
+              {expanded === m.id && (
+                <CardContent className="pt-0 space-y-2">
+                  {m.lessons.map((lesson: any) => (
                     <Link
+                      key={lesson._id}
                       to={`/course/${id}/module/${m.slug}/lesson/${lesson.slug}`}
-                      className="flex items-center gap-x-2"
+                      className="
+                        group flex items-center gap-3
+                        rounded-md border border-border
+                        px-4 py-3
+                        bg-card
+                        hover:bg-accent transition
+                      "
                     >
-                      <BookOpen className="w-4 h-4 text-muted-foreground" />
+                      <BookOpen className="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
                       <span className="text-foreground">{lesson.title}</span>
                     </Link>
-                  </div>
-                ))}
-              </CardContent>
-            )}
-          </Card>
-        ))}
+                  ))}
+                </CardContent>
+              )}
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );

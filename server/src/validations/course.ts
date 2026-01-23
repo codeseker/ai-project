@@ -121,7 +121,6 @@ export const courseIdValidation = asyncHandler(
   },
 );
 
-
 export function validateQuery(query: string): {
   isValid: boolean;
   reasons: string[];

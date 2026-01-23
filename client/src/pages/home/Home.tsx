@@ -66,26 +66,27 @@ export default function Home() {
   };
 
   return (
-    <div className="w-full flex justify-center py-28 px-4">
-      <div className="max-w-2xl w-full flex flex-col items-center space-y-10">
+    <div className="w-full min-h-[calc(100vh-4rem)] flex justify-center bg-background px-4">
+      <div className="max-w-2xl w-full flex flex-col items-center pt-32 space-y-10">
         {/* Title */}
         <h1 className="text-5xl font-extrabold tracking-tight text-center text-foreground">
           What do you want to master today?
         </h1>
 
-        {/* CTA */}
-        <p className="text-lg text-muted-foreground text-center">
+        {/* Subtitle */}
+        <p className="text-lg text-muted-foreground text-center max-w-xl">
           Describe your topic, and let AI build a complete, personalized course
           for you.
         </p>
 
-        {/* Input */}
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full relative">
+        {/* Input Card */}
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full">
           <div
             className="
-              flex items-center w-full rounded-full
-              pl-6 pr-14 py-4
+              relative flex items-center w-full
+              rounded-xl
               bg-card border border-border
+              px-5 py-4
               shadow-sm
               transition
               focus-within:ring-2 focus-within:ring-ring
@@ -94,8 +95,9 @@ export default function Home() {
             <input
               placeholder="Tell AI what course you want to generate..."
               className="
-                w-full bg-transparent text-lg
-                text-foreground placeholder:text-muted-foreground
+                w-full bg-transparent
+                text-base text-foreground
+                placeholder:text-muted-foreground
                 outline-none
               "
               {...register("prompt")}
@@ -105,33 +107,15 @@ export default function Home() {
               type="submit"
               disabled={loading}
               className="
-                absolute right-2
-                flex items-center justify-center
-                w-10 h-10 rounded-full
+                ml-3 inline-flex items-center justify-center
+                rounded-lg px-4 py-2
                 bg-primary text-primary-foreground
                 hover:opacity-90
                 transition
                 disabled:opacity-50
               "
             >
-              {loading ? (
-                "…"
-              ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  className="w-5 h-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3 12h18m0 0l-7-7m7 7l-7 7"
-                  />
-                </svg>
-              )}
+              {loading ? "Generating…" : "Generate"}
             </button>
           </div>
         </form>

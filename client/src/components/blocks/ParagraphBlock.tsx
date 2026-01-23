@@ -1,11 +1,18 @@
 type ParagraphBlockProps = {
-  children: React.ReactNode;
+  text: string;
 };
 
-export default function ParagraphBlock({ children }: ParagraphBlockProps) {
+export default function ParagraphBlock({ text }: ParagraphBlockProps) {
   return (
-    <p className="leading-7 text-muted-foreground mb-4 whitespace-pre-line">
-      {children}
+    <p
+      className="
+        text-foreground
+        leading-relaxed
+        max-w-prose
+        whitespace-pre-wrap
+      "
+    >
+      {text}
     </p>
   );
 }

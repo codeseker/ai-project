@@ -166,11 +166,20 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
     });
   }
 
-  const query = buildYouTubeQuery({
+  let query = buildYouTubeQuery({
     course: courseData,
     module: moduleData,
     lesson: lessonData,
   });
+
+  lessonData.content = parsed?.content ?? [];
+  const videoBlock = parsed?.content?.find(
+    (block: any) => block.type === "video",
+  );
+
+  if (videoBlock) {
+    query = videoBlock.query;
+  }
 
   const videos: any = await axios.get(
     "https://www.googleapis.com/youtube/v3/search",
@@ -190,7 +199,6 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
 
   const allIds = videos.data.items.map((item: any) => item.id.videoId);
 
-  lessonData.content = parsed?.content ?? [];
   lessonData.ytVideos = allIds;
   await lessonData.save();
 

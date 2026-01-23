@@ -79,14 +79,14 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
   const { prompt: userQuery } = req.body;
 
   // Validate user query against security checks
-  const checks = await validateUserQuery(model, securityChecks, userQuery);
+  // const checks = await validateUserQuery(model, securityChecks, userQuery);
 
-  if (!checks.isValid) {
-    return errorResponse(res, {
-      message: "Invalid user query from AI model",
-      errors: checks.reasons,
-    });
-  }
+  // if (!checks.isValid) {
+  //   return errorResponse(res, {
+  //     message: "Invalid user query from AI model",
+  //     errors: checks.reasons,
+  //   });
+  // }
 
   const intent = await classifyIntent(model, userQuery);
   const metadata = await generateMetadata(model, intent);

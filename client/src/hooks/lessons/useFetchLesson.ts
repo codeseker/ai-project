@@ -7,18 +7,18 @@ import { useParams } from "react-router-dom";
 
 type LessonParams = {
   courseId: string;
-  modId: string;
+  moduleId: string;
   lessonId: string;
 };
 
 export default function useFetchLesson() {
   const user = useSelector((state: RootState) => state.user);
-  const { courseId, modId, lessonId } = useParams<LessonParams>();
+  const { courseId, moduleId, lessonId } = useParams<LessonParams>();
 
   const asyncHandler = useAsyncHandler();
   const lessonGenerateSafe = asyncHandler(generateLessonContent);
 
-  const isEnabled = !!user.token && !!courseId && !!modId && !!lessonId;
+  const isEnabled = !!user.token && !!courseId && !!moduleId && !!lessonId;
 
   const {
     data: lessonData,
@@ -26,15 +26,15 @@ export default function useFetchLesson() {
     error,
     isError,
   } = useQuery({
-    queryKey: ["lesson", courseId, modId, lessonId],
+    queryKey: ["lesson", courseId, moduleId, lessonId],
     queryFn: async () => {
-      if (!courseId || !modId || !lessonId || !user.token) {
+      if (!courseId || !moduleId || !lessonId || !user.token) {
         throw new Error("Missing required lesson params");
       }
 
       return lessonGenerateSafe(user.token, {
         courseId,
-        moduleId: modId,
+        moduleId,
         lessonId,
       });
     },

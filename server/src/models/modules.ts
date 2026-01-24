@@ -7,6 +7,7 @@ export interface IModule extends Document {
   description: string;
   course: mongoose.Types.ObjectId;
   isDeleted: boolean;
+  isCompleted: boolean;
 }
 
 const moduleSchema: Schema<IModule> = new Schema<IModule>(
@@ -16,6 +17,7 @@ const moduleSchema: Schema<IModule> = new Schema<IModule>(
     description: { type: String, required: false },
     course: { type: mongoose.Types.ObjectId, ref: "Course", required: true },
     isDeleted: { type: Boolean, default: false },
+    isCompleted: { type: Boolean, default: false },
   },
   {
     timestamps: true,

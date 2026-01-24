@@ -2,29 +2,21 @@ import { Route, Routes } from "react-router-dom";
 import Login from "./pages/auth/Login";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import LoginGuard from "./routes/LoginGuard";
-import Home from "./pages/home/Home";
+import HomePage from "./pages/home/Home";
 import Register from "./pages/auth/Register";
-import CourseDetails from "./pages/course/Course";
-import Lesson from "./pages/lesson/Lesson";
-import AppLayout from "./components/layout/AppLayout";
-import CourseLayout from "./components/layout/CourseLayout";
+import CoursePage from "./pages/course/Course";
 
 function App() {
   return (
     <div>
       <Routes>
         <Route element={<ProtectedRoute />}>
-          <Route element={<AppLayout />}>
-            <Route path="/" element={<Home />} />
-          </Route>
+          <Route path="/" element={<HomePage />} />
 
-          <Route element={<CourseLayout />}>
-            <Route path="/course/:id" element={<CourseDetails />} />
-            <Route
-              path="/course/:courseId/module/:modId/lesson/:lessonId"
-              element={<Lesson />}
-            />
-          </Route>
+          <Route
+            path="/course/:courseId/module/:moduleId/lesson/:lessonId"
+            element={<CoursePage />}
+          />
         </Route>
 
         <Route

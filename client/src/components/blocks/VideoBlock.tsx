@@ -5,10 +5,10 @@ type VideoBlockProps = {
 
 export default function VideoBlock({ videoId, title }: VideoBlockProps) {
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="my-6 overflow-hidden rounded-xl border border-border bg-card">
       {/* Optional title */}
       {title && (
-        <div className="px-4 py-2 text-sm text-muted-foreground border-b border-border">
+        <div className="border-b border-border bg-muted/40 px-4 py-2 text-sm text-muted-foreground">
           {title}
         </div>
       )}
@@ -18,7 +18,8 @@ export default function VideoBlock({ videoId, title }: VideoBlockProps) {
         <iframe
           loading="lazy"
           src={`https://www.youtube.com/embed/${videoId}`}
-          className="w-full h-full"
+          className="h-full w-full"
+          referrerPolicy="strict-origin-when-cross-origin"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         />

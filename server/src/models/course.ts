@@ -13,6 +13,7 @@ export interface ICourse extends Document {
   estimatedDuration: string;
   prerequisites: string[];
   intentCategory: string;
+  isCompleted: boolean;
 }
 
 const courseSchema: Schema<ICourse> = new Schema<ICourse>(
@@ -28,6 +29,7 @@ const courseSchema: Schema<ICourse> = new Schema<ICourse>(
     estimatedDuration: { type: String, required: false },
     prerequisites: { type: [String], default: [] },
     intentCategory: { type: String, required: true },
+    isCompleted: { type: Boolean, default: false },
   },
   {
     timestamps: true,

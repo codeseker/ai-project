@@ -1,102 +1,91 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { ChevronDown, ChevronRight, BookOpen } from "lucide-react";
-import { useAsyncHandler } from "@/utils/async-handler";
-import { showCourse } from "@/actions/course";
-import { useSelector } from "react-redux";
-import type { RootState } from "@/store/store";
+import { useNavigate } from "react-router-dom";
 
-export default function CourseDetails() {
-  const { id } = useParams();
-  const user = useSelector((state: RootState) => state.user);
+import { AppSidebar } from "@/components/app-sidebar";
+import { CourseNavbar } from "@/components/course-navbar";
+import { LessonContent } from "@/pages/lesson/Lesson";
+import useFetchSingleCourse from "@/hooks/courses/useFetchSingleCourse";
+import type { Lesson, Module } from "@/types/common";
 
-  const asyncHandler = useAsyncHandler();
-  const safeCourseView = asyncHandler(showCourse);
+export default function CoursePage() {
+  const navigate = useNavigate();
 
-  const [course, setCourse] = useState<any>(null);
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const {
+    courseData: course,
+    isLoading,
+    isError,
+    error,
+  } = useFetchSingleCourse();
 
-  const getCourse = async () => {
-    const res = await safeCourseView(user.token as string, {
-      courseId: id as string,
-    });
+  // ✅ hooks ALWAYS declared
+  const [selectedModule, setSelectedModule] = useState<Module | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 
-    setCourse(res?.data?.course);
-  };
-
+  // ✅ sync state after data arrives
   useEffect(() => {
-    if (!user.token) return;
-    getCourse();
-  }, [user]);
+    if (!course) return;
 
-  const toggleModule = (moduleId: string) => {
-    setExpanded((prev) => (prev === moduleId ? null : moduleId));
-  };
+    const firstModule = course.modules?.[0];
+    const firstLesson = firstModule?.lessons?.[0];
 
-  if (!course) {
+    if (firstModule && firstLesson) {
+      setSelectedModule(firstModule);
+      setSelectedLesson(firstLesson);
+    }
+  }, [course]);
+
+  /* ------------------ LOADING ------------------ */
+  if (isLoading) {
     return (
-      <div className="text-muted-foreground">
-        Invalid Id or Course Not found
+      <div className="flex min-h-screen items-center justify-center">
+        Loading...
       </div>
     );
   }
 
-  return (
-    <div className="bg-background px-6 py-10 flex justify-center">
-      <div className="w-full max-w-4xl space-y-8">
-        {/* Course Header */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-foreground">{course.title}</h1>
+  /* ------------------ NOT FOUND ------------------ */
+  if (!course || isError || error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="space-y-4 text-center">
+          <h1 className="text-2xl font-bold">Course not found</h1>
           <p className="text-muted-foreground">
-            {course.modules.length} modules
+            The course you are looking for does not exist.
           </p>
+          <button
+            onClick={() => navigate("/")}
+            className="text-primary hover:underline"
+          >
+            Go back home
+          </button>
         </div>
+      </div>
+    );
+  }
 
-        {/* Modules */}
-        <div className="space-y-4">
-          {course.modules.map((m: any) => (
-            <Card key={m.id} className="border-border">
-              <CardHeader
-                onClick={() => toggleModule(m.id)}
-                className="
-                  cursor-pointer flex flex-row items-center justify-between
-                  hover:bg-accent transition rounded-md
-                "
-              >
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  {expanded === m.id ? (
-                    <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                  ) : (
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                  )}
-                  {m.title}
-                </CardTitle>
-              </CardHeader>
+  // extra safety
+  if (!selectedModule || !selectedLesson) return null;
 
-              {expanded === m.id && (
-                <CardContent className="pt-0 space-y-2">
-                  {m.lessons.map((lesson: any) => (
-                    <Link
-                      key={lesson._id}
-                      to={`/course/${id}/module/${m.slug}/lesson/${lesson.slug}`}
-                      className="
-                        group flex items-center gap-3
-                        rounded-md border border-border
-                        px-4 py-3
-                        bg-card
-                        hover:bg-accent transition
-                      "
-                    >
-                      <BookOpen className="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
-                      <span className="text-foreground">{lesson.title}</span>
-                    </Link>
-                  ))}
-                </CardContent>
-              )}
-            </Card>
-          ))}
-        </div>
+  return (
+    <div className="flex h-screen overflow-hidden bg-background">
+      <AppSidebar />
+
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <CourseNavbar
+          course={course}
+          selectedModule={selectedModule}
+          selectedLesson={selectedLesson}
+          onModuleChange={setSelectedModule}
+          onLessonChange={setSelectedLesson}
+        />
+
+        <main className="flex-1 overflow-y-auto">
+          <LessonContent
+            lesson={selectedLesson}
+            module={selectedModule}
+            courseTitle={course.title}
+          />
+        </main>
       </div>
     </div>
   );

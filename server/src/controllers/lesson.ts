@@ -206,7 +206,7 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
     statusCode: 200,
     message: "Lesson created successfully",
     data: {
-      content: parsed,
+      content: parsed?.content,
       navigation: {
         nextModuleSlug,
         nextLessonSlug,

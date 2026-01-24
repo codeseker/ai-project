@@ -5,9 +5,10 @@ import { useAsyncHandler } from "@/utils/async-handler";
 import { useQuery } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 
-export default function useCourseFetch() {
+export default function useCoursesFetch() {
   const asyncHandler = useAsyncHandler();
   const safeIndexCourses = asyncHandler(indexCourses);
+
   const user = useSelector((state: RootState) => state.user);
 
   const { data, isLoading, isError, error } = useQuery({
@@ -35,7 +36,7 @@ export default function useCourseFetch() {
             lessonSlug: lesson.slug,
           } as ICourseItem;
         })
-        .filter(Boolean);
+        .filter((course): course is ICourseItem => course !== null);
     },
   });
 

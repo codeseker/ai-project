@@ -19,9 +19,9 @@ export default function McqBlock({
   const hasAnswered = selected !== null;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 my-6">
+    <div className="my-6 rounded-xl border border-border bg-card p-6">
       {/* Question */}
-      <h4 className="text-base font-semibold text-foreground mb-4">
+      <h4 className="mb-4 text-base font-semibold text-foreground">
         {question}
       </h4>
 
@@ -39,27 +39,39 @@ export default function McqBlock({
               onClick={() => setSelected(idx)}
               className={`
                 w-full flex items-center justify-between
-                rounded-md border px-4 py-3 text-left
+                rounded-lg border px-4 py-3 text-left
                 transition
-                ${!hasAnswered && "hover:bg-accent hover:border-accent"}
                 ${
-                  hasAnswered &&
-                  isCorrect &&
-                  "bg-green-500/10 border-green-500/30 text-green-600"
+                  !hasAnswered
+                    ? "hover:bg-accent/40 hover:border-accent"
+                    : ""
                 }
                 ${
-                  hasAnswered &&
-                  isWrong &&
-                  "bg-destructive/10 border-destructive/30 text-destructive"
+                  hasAnswered && isCorrect
+                    ? "bg-primary/10 border-primary/30 text-primary"
+                    : ""
                 }
-                ${hasAnswered && !isCorrect && !isWrong && "opacity-60"}
+                ${
+                  hasAnswered && isWrong
+                    ? "bg-destructive/10 border-destructive/30 text-destructive"
+                    : ""
+                }
+                ${
+                  hasAnswered && !isCorrect && !isWrong
+                    ? "opacity-60"
+                    : ""
+                }
               `}
             >
               <span>{opt}</span>
 
-              {hasAnswered && isCorrect && <CheckCircle2 className="w-4 h-4" />}
+              {hasAnswered && isCorrect && (
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+              )}
 
-              {hasAnswered && isWrong && <XCircle className="w-4 h-4" />}
+              {hasAnswered && isWrong && (
+                <XCircle className="h-4 w-4 text-destructive" />
+              )}
             </button>
           );
         })}
@@ -67,7 +79,7 @@ export default function McqBlock({
 
       {/* Explanation */}
       {hasAnswered && (
-        <div className="mt-4 text-sm text-muted-foreground border-t border-border pt-4">
+        <div className="mt-4 rounded-md border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
           {explanation}
         </div>
       )}

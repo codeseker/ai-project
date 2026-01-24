@@ -11,6 +11,7 @@ export interface ILesson extends Document {
   description: string;
   estimatedMinutes: number;
   ytVideos: string[];
+  isCompleted: boolean;
 }
 
 const lessonSchema: Schema<ILesson> = new Schema<ILesson>(
@@ -24,6 +25,7 @@ const lessonSchema: Schema<ILesson> = new Schema<ILesson>(
     description: { type: String, required: false },
     estimatedMinutes: { type: Number, required: false },
     ytVideos: { type: [String], required: false },
+    isCompleted: { type: Boolean, default: false },
   },
   {
     timestamps: true,

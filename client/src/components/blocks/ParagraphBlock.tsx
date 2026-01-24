@@ -4,14 +4,7 @@ type ParagraphBlockProps = {
 
 export default function ParagraphBlock({ text }: ParagraphBlockProps) {
   return (
-    <p
-      className="
-        text-foreground
-        leading-relaxed
-        max-w-prose
-        whitespace-pre-wrap
-      "
-    >
+    <p className="text-foreground leading-relaxed whitespace-pre-wrap">
       {text}
     </p>
   );

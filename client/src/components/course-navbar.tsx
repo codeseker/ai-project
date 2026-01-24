@@ -36,34 +36,38 @@ export function CourseNavbar({
       <div className="flex h-14 items-center gap-2 px-4 lg:px-6">
         {/* Home */}
         <Link to="/" className="hidden lg:block">
-          <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+          >
             <Home className="h-4 w-4" />
             <span className="sr-only">Home</span>
           </Button>
         </Link>
 
-        <ChevronRight className="hidden lg:block h-4 w-4 text-muted-foreground" />
+        <ChevronRight className="hidden lg:block h-4 w-4 text-muted-foreground/60" />
 
         {/* Course Name */}
-        <span className="hidden sm:inline-block truncate max-w-[150px] text-sm font-medium">
+        <span className="hidden max-w-[150px] truncate text-sm font-medium text-muted-foreground sm:inline-block">
           {course.title}
         </span>
 
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
 
         {/* Module Dropdown */}
         <DropdownMenu open={moduleOpen} onOpenChange={setModuleOpen}>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="h-8 gap-1 px-2 text-sm font-medium"
+              className="h-8 gap-1 px-2 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
             >
               <span className="truncate max-w-[120px] sm:max-w-[200px]">
                 {selectedModule.title}
               </span>
               <ChevronDown
                 className={cn(
-                  "h-4 w-4 transition-transform",
+                  "h-4 w-4 transition-transform opacity-70",
                   moduleOpen && "rotate-180",
                 )}
               />
@@ -81,10 +85,13 @@ export function CourseNavbar({
                     url += `lesson/${module.lessons[0].slug}`;
                     onLessonChange(module.lessons[0]);
                   }
-
                   navigate(url);
                 }}
-                className={cn(selectedModule.id === module.id && "bg-accent")}
+                className={cn(
+                  "cursor-pointer my-1",
+                  selectedModule.id === module.id &&
+                    "bg-accent text-accent-foreground",
+                )}
               >
                 {module.title}
               </DropdownMenuItem>
@@ -92,21 +99,21 @@ export function CourseNavbar({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
 
         {/* Lesson Dropdown */}
         <DropdownMenu open={lessonOpen} onOpenChange={setLessonOpen}>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="h-8 gap-1 px-2 text-sm font-medium"
+              className="h-8 gap-1 px-2 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
             >
               <span className="truncate max-w-[120px] sm:max-w-[200px]">
                 {selectedLesson.title}
               </span>
               <ChevronDown
                 className={cn(
-                  "h-4 w-4 transition-transform",
+                  "h-4 w-4 transition-transform opacity-70",
                   lessonOpen && "rotate-180",
                 )}
               />
@@ -118,11 +125,15 @@ export function CourseNavbar({
               <DropdownMenuItem
                 key={lesson._id}
                 onClick={() => {
-                  let url = `/course/${course.slug}/module/${selectedModule.slug}/lesson/${lesson.slug}`;
+                  const url = `/course/${course.slug}/module/${selectedModule.slug}/lesson/${lesson.slug}`;
                   onLessonChange(lesson);
                   navigate(url);
                 }}
-                className={cn(selectedLesson._id === lesson._id && "bg-accent")}
+                className={cn(
+                  "cursor-pointer my-1",
+                  selectedLesson._id === lesson._id &&
+                    "bg-accent text-accent-foreground",
+                )}
               >
                 {lesson.title}
               </DropdownMenuItem>

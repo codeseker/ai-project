@@ -63,15 +63,17 @@ export function SignupForm({
   return (
     <div
       className={cn(
-        "flex min-h-screen items-center justify-center bg-background px-4",
+        "flex min-h-screen items-center justify-center bg-background px-4 py-12",
         className,
       )}
       {...props}
     >
-      <Card className="w-full max-w-sm border-border">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl">Create an account</CardTitle>
-          <CardDescription>
+      <Card className="w-full max-w-sm border-border shadow-sm">
+        <CardHeader className="space-y-2 text-center">
+          <CardTitle className="text-2xl font-semibold tracking-tight text-foreground">
+            Create an account
+          </CardTitle>
+          <CardDescription className="text-muted-foreground">
             Start learning with personalized AI courses
           </CardDescription>
         </CardHeader>
@@ -81,7 +83,7 @@ export function SignupForm({
             <FieldGroup>
               {/* First + Last name */}
               <div className="grid grid-cols-2 gap-3">
-                <Field>
+                <Field className="space-y-2">
                   <FieldLabel htmlFor="first_name">First name</FieldLabel>
                   <Input
                     id="first_name"
@@ -89,13 +91,13 @@ export function SignupForm({
                     {...register("first_name")}
                   />
                   {errors.first_name && (
-                    <p className="text-sm text-destructive">
+                    <p className="text-sm font-medium text-destructive">
                       {errors.first_name.message}
                     </p>
                   )}
                 </Field>
 
-                <Field>
+                <Field className="space-y-2">
                   <FieldLabel htmlFor="last_name">Last name</FieldLabel>
                   <Input
                     id="last_name"
@@ -103,7 +105,7 @@ export function SignupForm({
                     {...register("last_name")}
                   />
                   {errors.last_name && (
-                    <p className="text-sm text-destructive">
+                    <p className="text-sm font-medium text-destructive">
                       {errors.last_name.message}
                     </p>
                   )}
@@ -111,7 +113,7 @@ export function SignupForm({
               </div>
 
               {/* Email */}
-              <Field>
+              <Field className="space-y-2">
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
                   id="email"
@@ -120,7 +122,7 @@ export function SignupForm({
                   {...register("email")}
                 />
                 {errors.email && (
-                  <p className="text-sm text-destructive">
+                  <p className="text-sm font-medium text-destructive">
                     {errors.email.message}
                   </p>
                 )}
@@ -130,7 +132,7 @@ export function SignupForm({
               </Field>
 
               {/* Password */}
-              <Field>
+              <Field className="space-y-2">
                 <FieldLabel htmlFor="password">Password</FieldLabel>
                 <Input
                   id="password"
@@ -141,14 +143,14 @@ export function SignupForm({
                   Must be at least 6 characters.
                 </FieldDescription>
                 {errors.password && (
-                  <p className="text-sm text-destructive">
+                  <p className="text-sm font-medium text-destructive">
                     {errors.password.message}
                   </p>
                 )}
               </Field>
 
               {/* Confirm Password */}
-              <Field>
+              <Field className="space-y-2">
                 <FieldLabel htmlFor="confirm_password">
                   Confirm password
                 </FieldLabel>
@@ -158,14 +160,14 @@ export function SignupForm({
                   {...register("confirm_password")}
                 />
                 {errors.confirm_password && (
-                  <p className="text-sm text-destructive">
+                  <p className="text-sm font-medium text-destructive">
                     {errors.confirm_password.message}
                   </p>
                 )}
               </Field>
 
               {/* Actions */}
-              <Field className="space-y-3">
+              <Field className="space-y-3 pt-2">
                 <Button type="submit" className="w-full">
                   Create account
                 </Button>
@@ -174,11 +176,11 @@ export function SignupForm({
                   Continue with Google
                 </Button>
 
-                <FieldDescription className="text-center">
+                <FieldDescription className="text-center text-sm text-muted-foreground">
                   Already have an account?{" "}
                   <Link
                     to="/login"
-                    className="underline underline-offset-4 hover:text-foreground"
+                    className="font-medium underline underline-offset-4 hover:text-foreground"
                   >
                     Sign in
                   </Link>

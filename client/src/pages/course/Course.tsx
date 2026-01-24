@@ -17,11 +17,9 @@ export default function CoursePage() {
     error,
   } = useFetchSingleCourse();
 
-  // ✅ hooks ALWAYS declared
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 
-  // ✅ sync state after data arrives
   useEffect(() => {
     if (!course) return;
 
@@ -37,8 +35,11 @@ export default function CoursePage() {
   /* ------------------ LOADING ------------------ */
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        Loading...
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="space-y-4 text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground">Loading course…</p>
+        </div>
       </div>
     );
   }
@@ -46,15 +47,18 @@ export default function CoursePage() {
   /* ------------------ NOT FOUND ------------------ */
   if (!course || isError || error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="space-y-4 text-center">
-          <h1 className="text-2xl font-bold">Course not found</h1>
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <div className="space-y-5 text-center">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            Course not found
+          </h1>
           <p className="text-muted-foreground">
-            The course you are looking for does not exist.
+            The course you are looking for doesn’t exist or may have been
+            removed.
           </p>
           <button
             onClick={() => navigate("/")}
-            className="text-primary hover:underline"
+            className="font-medium text-primary hover:underline"
           >
             Go back home
           </button>
@@ -63,11 +67,10 @@ export default function CoursePage() {
     );
   }
 
-  // extra safety
   if (!selectedModule || !selectedLesson) return null;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-screen overflow-hidden bg-background text-foreground">
       <AppSidebar />
 
       <div className="flex flex-1 flex-col overflow-hidden">
@@ -79,7 +82,7 @@ export default function CoursePage() {
           onLessonChange={setSelectedLesson}
         />
 
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto bg-background">
           <LessonContent
             lesson={selectedLesson}
             module={selectedModule}

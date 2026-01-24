@@ -50,22 +50,26 @@ export function LoginForm({ className, onSubmit, ...props }: LoginFormProps) {
   return (
     <div
       className={cn(
-        "flex min-h-screen items-center justify-center bg-background px-4",
+        "flex min-h-screen items-center justify-center bg-background px-4 py-12",
         className,
       )}
       {...props}
     >
-      <Card className="w-full max-w-sm border-border">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl">Welcome back</CardTitle>
-          <CardDescription>Sign in to continue learning</CardDescription>
+      <Card className="w-full max-w-sm border-border shadow-sm">
+        <CardHeader className="space-y-2 text-center">
+          <CardTitle className="text-2xl font-semibold tracking-tight text-foreground">
+            Welcome back
+          </CardTitle>
+          <CardDescription className="text-muted-foreground">
+            Sign in to continue learning
+          </CardDescription>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <FieldGroup>
               {/* Email */}
-              <Field>
+              <Field className="space-y-2">
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
                   id="email"
@@ -74,19 +78,19 @@ export function LoginForm({ className, onSubmit, ...props }: LoginFormProps) {
                   {...register("email")}
                 />
                 {errors.email && (
-                  <p className="text-sm text-destructive">
+                  <p className="text-sm font-medium text-destructive">
                     {errors.email.message}
                   </p>
                 )}
               </Field>
 
               {/* Password */}
-              <Field>
+              <Field className="space-y-2">
                 <div className="flex items-center justify-between">
                   <FieldLabel htmlFor="password">Password</FieldLabel>
                   <Link
                     to="/forgot-password"
-                    className="text-sm text-muted-foreground hover:text-foreground transition"
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                   >
                     Forgot password?
                   </Link>
@@ -97,14 +101,14 @@ export function LoginForm({ className, onSubmit, ...props }: LoginFormProps) {
                   {...register("password")}
                 />
                 {errors.password && (
-                  <p className="text-sm text-destructive">
+                  <p className="text-sm font-medium text-destructive">
                     {errors.password.message}
                   </p>
                 )}
               </Field>
 
               {/* Actions */}
-              <Field className="space-y-3">
+              <Field className="space-y-3 pt-2">
                 <Button type="submit" className="w-full">
                   Login
                 </Button>
@@ -113,11 +117,11 @@ export function LoginForm({ className, onSubmit, ...props }: LoginFormProps) {
                   Continue with Google
                 </Button>
 
-                <FieldDescription className="text-center">
+                <FieldDescription className="text-center text-sm text-muted-foreground">
                   Don&apos;t have an account?{" "}
                   <Link
                     to="/register"
-                    className="underline underline-offset-4 hover:text-foreground"
+                    className="font-medium underline underline-offset-4 hover:text-foreground"
                   >
                     Sign up
                   </Link>

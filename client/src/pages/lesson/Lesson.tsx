@@ -1,12 +1,5 @@
-import { BookOpen, Clock, CheckCircle2, PlayCircle } from "lucide-react";
+import { BookOpen, Clock, CheckCircle2 } from "lucide-react";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { Lesson, Module } from "@/types/common";
 import useFetchLesson from "@/hooks/lessons/useFetchLesson";
@@ -29,28 +22,46 @@ export function LessonContent({
 }: LessonContentProps) {
   const { lessonData, isLoading, isError, error } = useFetchLesson();
 
+  /* ------------------ LOADING ------------------ */
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="space-y-4 text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground">Loading lesson…</p>
+        </div>
+      </div>
+    );
   }
 
+  /* ------------------ ERROR ------------------ */
   if (isError && error) {
-    return <div>{error.message}</div>;
+    return (
+      <div className="py-20 text-center">
+        <p className="text-sm text-destructive">
+          Failed to load lesson content.
+        </p>
+        <p className="mt-2 text-xs text-muted-foreground">{error.message}</p>
+      </div>
+    );
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-8 lg:px-8">
+    <div className="mx-auto w-full max-w-5xl px-4 py-10 lg:px-8">
       {/* Header */}
-      <div className="mb-8 space-y-4">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="mb-10 space-y-5">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           <BookOpen className="h-4 w-4" />
           <span>{courseTitle}</span>
           <span className="text-border">/</span>
           <span>{module.title}</span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight">{lesson.title}</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          {lesson.title}
+        </h1>
 
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
           <div className="flex items-center gap-1.5">
             <Clock className="h-4 w-4" />
             <span>15 min read</span>
@@ -63,26 +74,26 @@ export function LessonContent({
       </div>
 
       {/* Lesson Body */}
-      <div className="w-full space-y-6">
+      <div className="space-y-7">
         {Array.isArray(lessonData?.content) &&
-          lessonData?.content.map((block) => {
+          lessonData.content.map((block, i) => {
             switch (block.type) {
               case "code":
                 return (
                   <CodeBlock
-                    key={block.text}
+                    key={`code-${i}`}
                     language={block.language}
                     code={block.text}
                   />
                 );
 
               case "paragraph":
-                return <ParagraphBlock text={block.text} key={block.text} />;
+                return <ParagraphBlock key={`p-${i}`} text={block.text} />;
 
               case "mcq":
                 return (
                   <McqBlock
-                    key={block.answer}
+                    key={`mcq-${i}`}
                     answer={block.answer}
                     explanation={block.explanation}
                     options={block.options}
@@ -92,22 +103,31 @@ export function LessonContent({
 
               case "heading":
                 return (
-                  <HeadingBlock key={block.text} level={1} text={block.text} />
+                  <HeadingBlock key={`h-${i}`} level={2} text={block.text} />
                 );
+
+              default:
+                return null;
             }
           })}
 
-        <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2 col-span-3">
-          {lessonData?.ytVideos.map((video) => (
-            <VideoBlock videoId={video} key={video} />
-          ))}
-        </div>
+        {/* Videos */}
+        {lessonData?.ytVideos && lessonData?.ytVideos?.length > 0 && (
+          <div className="grid gap-6 pt-4 sm:grid-cols-1 lg:grid-cols-2">
+            {lessonData.ytVideos.map((video, i) => (
+              <VideoBlock videoId={video} key={`vid-${i}`} />
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="mt-8 flex items-center justify-between">
-        <Button variant="outline">Previous Lesson</Button>
-        <Button>Mark as Complete</Button>
-        <Button variant="outline">Next Lesson</Button>
+      {/* Footer Actions */}
+      <div className="mt-12 flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <Button variant="default">Previous Lesson</Button>
+
+        <Button variant="default">Mark as Complete</Button>
+
+        <Button variant="default">Next Lesson</Button>
       </div>
     </div>
   );

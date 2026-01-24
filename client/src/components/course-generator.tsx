@@ -1,64 +1,62 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import { Sparkles, Plus } from "lucide-react"
+import React, { useState } from "react";
+import { Sparkles, Plus } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 
 export function CourseGenerator() {
-  const [courseName, setCourseName] = useState("")
-  const [isGenerating, setIsGenerating] = useState(false)
+  const [courseName, setCourseName] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerate = async () => {
-    if (!courseName.trim()) return
+    if (!courseName.trim()) return;
 
-    setIsGenerating(true)
-
-    // 🔹 Dummy delay (fake generation)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // 🔹 Dummy action
-    console.log("Generated course:", courseName)
-
-    setCourseName("")
-    setIsGenerating(false)
-  }
+    setIsGenerating(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    console.log("Generated course:", courseName);
+    setCourseName("");
+    setIsGenerating(false);
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleGenerate()
+      e.preventDefault();
+      handleGenerate();
     }
-  }
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] p-6 lg:p-8">
-      <div className="w-full max-w-2xl space-y-8">
+    <div className="flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center bg-background px-6 py-12 lg:px-8">
+      <div className="w-full max-w-2xl space-y-10">
         {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="inline-flex items-center justify-center rounded-full bg-primary/10 p-4">
+        <div className="space-y-5 text-center">
+          <div className="inline-flex items-center justify-center rounded-full bg-primary/10 p-4 shadow-sm">
             <Sparkles className="h-8 w-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Create a New Course
           </h1>
-          <p className="text-muted-foreground text-lg max-w-md mx-auto">
-            Enter a course title and we will generate a complete course structure for you.
+
+          <p className="mx-auto max-w-md text-lg leading-relaxed text-muted-foreground">
+            Enter a course title and we’ll generate a structured curriculum with
+            lessons, modules, and learning flow.
           </p>
         </div>
 
         {/* Generator Card */}
-        <Card>
+        <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle>Course Generator</CardTitle>
+            <CardTitle className="text-foreground">Course Generator</CardTitle>
             <CardDescription>
               Start by entering the name of the course you want to create
             </CardDescription>
@@ -100,21 +98,27 @@ export function CourseGenerator() {
           {[
             {
               title: "Be Specific",
-              description: "Detailed course names generate better content structure",
+              description:
+                "Detailed course names produce a more structured syllabus",
             },
             {
               title: "Include Level",
-              description: "Add 'Beginner', 'Advanced' etc. for tailored modules",
+              description:
+                "Add ‘Beginner’ or ‘Advanced’ to tailor the difficulty",
             },
             {
-              title: "Topic Focus",
-              description: "Focus on one main topic for coherent course flow",
+              title: "Stay Focused",
+              description:
+                "One core topic leads to clearer modules and learning flow",
             },
           ].map((tip) => (
-            <Card key={tip.title} className="bg-card/50">
+            <Card
+              key={tip.title}
+              className="border-border bg-card/60 shadow-xs backdrop-blur-sm"
+            >
               <CardContent className="pt-6">
-                <h3 className="font-medium">{tip.title}</h3>
-                <p className="text-sm text-muted-foreground mt-1">
+                <h3 className="font-medium text-foreground">{tip.title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                   {tip.description}
                 </p>
               </CardContent>
@@ -123,5 +127,5 @@ export function CourseGenerator() {
         </div>
       </div>
     </div>
-  )
+  );
 }

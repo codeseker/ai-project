@@ -17,52 +17,52 @@ export default function CodeBlock({ language, code }: CodeBlockProps) {
   };
 
   return (
-    <div className="my-6 overflow-hidden rounded-xl border border-border bg-card">
+    <div className="my-6 overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between bg-muted/40 px-4 py-2 text-xs text-muted-foreground">
-        <span className="uppercase tracking-wide">{language || "code"}</span>
+      <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2 text-xs text-muted-foreground">
+        <span className="font-medium uppercase tracking-wide">
+          {language || "code"}
+        </span>
 
         <button
           onClick={handleCopy}
-          className="inline-flex items-center gap-1 transition hover:text-foreground"
+          className="inline-flex items-center gap-1 rounded-md px-2 py-1 font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-card"
         >
           {copied ? (
             <>
-              <Check className="h-3 w-3" /> Copied
+              <Check className="h-3.5 w-3.5" /> Copied
             </>
           ) : (
             <>
-              <Copy className="h-3 w-3" /> Copy
+              <Copy className="h-3.5 w-3.5" /> Copy
             </>
           )}
         </button>
       </div>
 
       {/* Code */}
-      <SyntaxHighlighter
-        language={language}
-        showLineNumbers
-        wrapLines
-        customStyle={{
-          margin: 0,
-          background: "transparent",
-          padding: "1rem",
-          fontSize: "0.85rem",
-          fontFamily: "var(--font-mono)",
-          color: "var(--foreground)",
-          overflowX: "auto",
-        }}
-        lineNumberStyle={{
-          opacity: 0.4,
-          fontSize: "0.75rem",
-          marginRight: "1rem",
-        }}
-        codeTagProps={{
-          className: "text-foreground",
-        }}
-      >
-        {code}
-      </SyntaxHighlighter>
+      <div className="bg-card font-mono text-sm text-foreground">
+        <SyntaxHighlighter
+          language={language}
+          showLineNumbers
+          wrapLines
+          customStyle={{
+            margin: 0,
+            background: "transparent",
+            padding: "1rem",
+          }}
+          lineNumberStyle={{
+            opacity: 0.35,
+            fontSize: "0.75rem",
+            marginRight: "1rem",
+          }}
+          codeTagProps={{
+            className: "font-mono text-foreground",
+          }}
+        >
+          {code}
+        </SyntaxHighlighter>
+      </div>
     </div>
   );
 }

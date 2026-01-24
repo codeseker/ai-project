@@ -19,14 +19,14 @@ export default function McqBlock({
   const hasAnswered = selected !== null;
 
   return (
-    <div className="my-6 rounded-xl border border-border bg-card p-6">
+    <div className="my-6 rounded-lg border border-border bg-card p-6 text-card-foreground shadow-sm">
       {/* Question */}
-      <h4 className="mb-4 text-base font-semibold text-foreground">
+      <h4 className="mb-5 text-base font-semibold leading-snug text-foreground">
         {question}
       </h4>
 
       {/* Options */}
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         {options.map((opt, idx) => {
           const isSelected = selected === idx;
           const isCorrect = idx === answer;
@@ -38,39 +38,36 @@ export default function McqBlock({
               disabled={hasAnswered}
               onClick={() => setSelected(idx)}
               className={`
-                w-full flex items-center justify-between
-                rounded-lg border px-4 py-3 text-left
-                transition
+                group w-full flex items-center justify-between gap-3
+                rounded-md border px-4 py-3 text-left text-sm
+                transition-all duration-200
+                focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-card
                 ${
                   !hasAnswered
-                    ? "hover:bg-accent/40 hover:border-accent"
-                    : ""
+                    ? "border-border bg-background hover:bg-accent/40 hover:border-accent"
+                    : "cursor-default"
                 }
                 ${
                   hasAnswered && isCorrect
-                    ? "bg-primary/10 border-primary/30 text-primary"
+                    ? "border-primary/40 bg-primary/10 text-primary"
                     : ""
                 }
                 ${
                   hasAnswered && isWrong
-                    ? "bg-destructive/10 border-destructive/30 text-destructive"
+                    ? "border-destructive/40 bg-destructive/10 text-destructive"
                     : ""
                 }
-                ${
-                  hasAnswered && !isCorrect && !isWrong
-                    ? "opacity-60"
-                    : ""
-                }
+                ${hasAnswered && !isCorrect && !isWrong ? "opacity-60" : ""}
               `}
             >
-              <span>{opt}</span>
+              <span className="flex-1">{opt}</span>
 
               {hasAnswered && isCorrect && (
-                <CheckCircle2 className="h-4 w-4 text-primary" />
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
               )}
 
               {hasAnswered && isWrong && (
-                <XCircle className="h-4 w-4 text-destructive" />
+                <XCircle className="h-4 w-4 shrink-0 text-destructive" />
               )}
             </button>
           );
@@ -79,7 +76,7 @@ export default function McqBlock({
 
       {/* Explanation */}
       {hasAnswered && (
-        <div className="mt-4 rounded-md border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
+        <div className="mt-5 rounded-md border border-border bg-muted/40 p-4 text-sm leading-relaxed text-muted-foreground">
           {explanation}
         </div>
       )}

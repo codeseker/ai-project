@@ -5,10 +5,10 @@ type VideoBlockProps = {
 
 export default function VideoBlock({ videoId, title }: VideoBlockProps) {
   return (
-    <div className="my-6 overflow-hidden rounded-xl border border-border bg-card">
+    <div className="my-6 overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-sm">
       {/* Optional title */}
       {title && (
-        <div className="border-b border-border bg-muted/40 px-4 py-2 text-sm text-muted-foreground">
+        <div className="border-b border-border bg-muted/40 px-4 py-2 text-sm font-medium text-muted-foreground">
           {title}
         </div>
       )}

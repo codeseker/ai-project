@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useState, useMemo } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   BookOpen,
   ChevronRight,
@@ -8,6 +8,8 @@ import {
   SunMoon,
   User,
   X,
+  PlusCircle,
+  Search,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -20,30 +22,38 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import useCoursesFetch from "@/hooks/courses/useFetchCourses";
 import { toggleTheme } from "@/store/slices/theme";
 import { useDispatch } from "react-redux";
+import { clearUser } from "@/store/slices/user";
 
 export function AppSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const dispatch = useDispatch();
+  const [search, setSearch] = useState("");
+
   const { courses } = useCoursesFetch();
 
-  const handleCourseClick = () => {
-    if (isMobile) setSidebarOpen(false);
-  };
+  const filteredCourses = useMemo(() => {
+    return courses.filter((c) =>
+      c.title.toLowerCase().includes(search.toLowerCase()),
+    );
+  }, [courses, search]);
 
-  const handleToggleTheme = () => {
-    dispatch(toggleTheme());
-  };
+  const handleToggleTheme = () => dispatch(toggleTheme());
+
+  const handleLogout = () => dispatch(clearUser());
 
   return (
     <>
-      {/* Mobile Menu Button */}
       {!sidebarOpen && (
         <Button
           variant="ghost"
@@ -55,7 +65,6 @@ export function AppSidebar() {
         </Button>
       )}
 
-      {/* Overlay */}
       {sidebarOpen && isMobile && (
         <div
           className="fixed inset-0 z-30 bg-background/70 backdrop-blur-sm lg:hidden"
@@ -63,7 +72,6 @@ export function AppSidebar() {
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={cn(
           "fixed left-0 top-0 z-40 h-screen w-72 border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-transform duration-300 lg:relative lg:translate-x-0",
@@ -71,7 +79,7 @@ export function AppSidebar() {
         )}
       >
         <div className="flex h-full flex-col">
-          {/* Logo */}
+          {/* LOGO */}
           <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-6">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary shadow-sm">
@@ -85,29 +93,53 @@ export function AppSidebar() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground lg:hidden"
+              className="lg:hidden"
               onClick={() => setSidebarOpen(false)}
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
 
-          {/* Course List */}
-          <div className="flex-1 overflow-hidden">
-            <div className="px-4 py-4">
-              <p className="px-2 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/70">
-                Your Courses
-              </p>
-            </div>
+          {/* CREATE COURSE CTA */}
+          <div className="p-4">
+            <Button
+              className="w-full justify-start gap-2 cursor-pointer"
+              onClick={() => navigate("/")}
+            >
+              <PlusCircle className="h-4 w-4" />
+              Create New Course
+            </Button>
+          </div>
 
-            <ScrollArea className="h-[calc(100vh-200px)] px-4">
+          <Separator />
+
+          {/* SEARCH */}
+          <div className="p-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search courses..."
+                className="pl-9"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* COURSE LIST */}
+          <div className="flex-1 overflow-hidden px-2">
+            <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/60">
+              Your Courses
+            </p>
+
+            <ScrollArea className="h-[calc(100vh-330px)] pr-2">
               <div className="space-y-1">
-                {courses.length === 0 ? (
-                  <p className="px-2 py-4 text-sm text-sidebar-foreground/60">
-                    No courses yet.
+                {filteredCourses.length === 0 ? (
+                  <p className="px-3 py-4 text-sm text-sidebar-foreground/60">
+                    No matching courses
                   </p>
                 ) : (
-                  courses.map((course) => {
+                  filteredCourses.map((course) => {
                     const isActive = location.pathname.includes(
                       `/course/${course.slug}`,
                     );
@@ -116,16 +148,18 @@ export function AppSidebar() {
                       <Link
                         key={course.id}
                         to={`/course/${course.slug}/module/${course.moduleSlug}/lesson/${course.lessonSlug}`}
-                        onClick={handleCourseClick}
+                        onClick={() => isMobile && setSidebarOpen(false)}
                         className={cn(
-                          "group flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
-                          isActive
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
-                            : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
+                          "group flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium transition-all",
+                          "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                          isActive &&
+                            "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm",
                         )}
                       >
-                        <span className="truncate">{course.title}</span>
-                        <ChevronRight className="h-4 w-4 opacity-40 transition group-hover:opacity-70" />
+                        <span className="truncate max-w-[170px]">
+                          {course.title}
+                        </span>
+                        <ChevronRight className="h-4 w-4 opacity-40 group-hover:opacity-70" />
                       </Link>
                     );
                   })
@@ -134,13 +168,13 @@ export function AppSidebar() {
             </ScrollArea>
           </div>
 
-          {/* User Profile */}
+          {/* PROFILE */}
           <div className="border-t border-sidebar-border p-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="w-full justify-start gap-3 px-2 hover:bg-sidebar-accent"
+                  className="w-full justify-start h-14 gap-3 px-3"
                 >
                   <Avatar className="h-9 w-9">
                     <AvatarImage src="/placeholder-user.jpg" />
@@ -173,7 +207,10 @@ export function AppSidebar() {
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItem className="flex items-center gap-2 text-destructive">
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 text-destructive"
+                >
                   <LogOut className="h-4 w-4" />
                   Log out
                 </DropdownMenuItem>

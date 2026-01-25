@@ -1,4 +1,4 @@
-import axios from "axios";
+import { api } from "@/api/axios";
 import type { ApiResponse } from "@/types/api-response";
 import type {
   CreateCourseResponse,
@@ -7,71 +7,36 @@ import type {
   SingleCourseResponse,
 } from "@/types/course-api/course.types";
 
-const baseUrl = import.meta.env.VITE_BACKEND_API_URL_LOCAL;
-
-export async function indexCourses(
-  token: string,
-): Promise<ApiResponse<MultipleCoursesResponse>> {
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  };
-
-  const res = await axios.get(`${baseUrl}/course/all`, { headers });
-  return res.data as ApiResponse<MultipleCoursesResponse>;
-}
-
-export async function showCourse(
-  token: string,
-  { courseId }: { courseId: string },
-): Promise<ApiResponse<SingleCourseResponse>> {
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  };
-
-  const res = await axios.get(`${baseUrl}/course/${courseId}/view`, {
-    headers,
-  });
+export async function indexCourses(): Promise<
+  ApiResponse<MultipleCoursesResponse>
+> {
+  const res = await api.get("/course/all");
   return res.data;
 }
 
-export async function createCourse(
-  token: string,
-  {
-    prompt,
-  }: {
-    prompt: string;
-  },
-): Promise<ApiResponse<CreateCourseResponse>> {
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  };
-
-  const res = await axios.post(
-    `${baseUrl}/course/create`,
-    { prompt },
-    { headers },
-  );
-  return res.data as ApiResponse<CreateCourseResponse>;
+export async function showCourse({
+  courseId,
+}: {
+  courseId: string;
+}): Promise<ApiResponse<SingleCourseResponse>> {
+  const res = await api.get(`/course/${courseId}/view`);
+  return res.data;
 }
 
-export async function deleteCourse(
-  token: string,
-  {
-    courseId,
-  }: {
-    courseId: string;
-  },
-): Promise<ApiResponse<DeleteCourseResponse>> {
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  };
+export async function createCourse({
+  prompt,
+}: {
+  prompt: string;
+}): Promise<ApiResponse<CreateCourseResponse>> {
+  const res = await api.post("/course/create", { prompt });
+  return res.data;
+}
 
-  const res = await axios.delete(`${baseUrl}/course/${courseId}/delete`, {
-    headers,
-  });
-  return res.data as ApiResponse<DeleteCourseResponse>;
+export async function deleteCourse({
+  courseId,
+}: {
+  courseId: string;
+}): Promise<ApiResponse<DeleteCourseResponse>> {
+  const res = await api.delete(`/course/${courseId}/delete`);
+  return res.data;
 }

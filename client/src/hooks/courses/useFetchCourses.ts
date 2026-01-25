@@ -13,7 +13,7 @@ export default function useCoursesFetch() {
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["courses", user.user?.id],
-    queryFn: () => safeIndexCourses(user?.token ?? ""),
+    queryFn: () => safeIndexCourses(),
     enabled: !!user?.token,
     select: (res) => {
       if (!res?.data?.courses) return [];

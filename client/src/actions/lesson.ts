@@ -1,7 +1,5 @@
+import { api } from "@/api/axios";
 import type { ApiResponse } from "@/types/api-response";
-import axios from "axios";
-
-const baseUrl = import.meta.env.VITE_BACKEND_API_URL_LOCAL;
 
 export interface HeadingBlock {
   type: "heading";
@@ -27,11 +25,6 @@ export interface MCQBlock {
   explanation: string;
 }
 
-export interface VideoBlock {
-  type: "video";
-  query: string;
-}
-
 export type ContentBlock = HeadingBlock | ParagraphBlock | CodeBlock | MCQBlock;
 
 export interface LessonContentResponse {
@@ -43,31 +36,20 @@ export interface LessonContentResponse {
   ytVideos: string[];
 }
 
-export async function generateLessonContent(
-  token: string,
-  {
+export async function generateLessonContent({
+  courseId,
+  moduleId,
+  lessonId,
+}: {
+  courseId: string;
+  moduleId: string;
+  lessonId: string;
+}): Promise<ApiResponse<LessonContentResponse>> {
+  const res = await api.post("/lesson/create", {
     courseId,
     moduleId,
     lessonId,
-  }: {
-    courseId: string;
-    moduleId: string;
-    lessonId: string;
-  },
-): Promise<ApiResponse<LessonContentResponse>> {
-  const res = await axios.post(
-    `${baseUrl}/lesson/create`,
-    {
-      courseId,
-      moduleId,
-      lessonId,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    },
-  );
-  return res.data as ApiResponse<LessonContentResponse>;
+  });
+
+  return res.data;
 }

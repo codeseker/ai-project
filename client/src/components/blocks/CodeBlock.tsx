@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { Copy, Check } from "lucide-react";
+import {
+  dracula,
+  oneLight,
+} from "react-syntax-highlighter/dist/esm/styles/prism";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store/store";
 
 type CodeBlockProps = {
   language?: string;
@@ -8,6 +14,7 @@ type CodeBlockProps = {
 };
 
 export default function CodeBlock({ language, code }: CodeBlockProps) {
+  const theme = useSelector((state: RootState) => state.theme.mode);
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -44,17 +51,13 @@ export default function CodeBlock({ language, code }: CodeBlockProps) {
       <div className="bg-card font-mono text-sm text-foreground">
         <SyntaxHighlighter
           language={language}
+          style={theme === "dark" ? dracula : oneLight}
           showLineNumbers
           wrapLines
           customStyle={{
             margin: 0,
             background: "transparent",
             padding: "1rem",
-          }}
-          lineNumberStyle={{
-            opacity: 0.35,
-            fontSize: "0.75rem",
-            marginRight: "1rem",
           }}
           codeTagProps={{
             className: "font-mono text-foreground",

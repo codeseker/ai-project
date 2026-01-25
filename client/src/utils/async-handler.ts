@@ -1,16 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { errorToast } from "@/utils/toaster";
-import { useDispatch, useSelector } from "react-redux";
-import { clearUser, setUser } from "@/store/slices/user";
-import { refreshUser } from "@/actions/user";
-import type { RootState } from "@/store/store";
 
 export function useAsyncHandler() {
   const navigate = useNavigate();
-
-  const dispatch = useDispatch();
-
-  const auth = useSelector((state: RootState) => state.user);
 
   return function asyncHandler<T extends (...args: any[]) => Promise<any>>(
     fn: T,
@@ -27,29 +19,18 @@ export function useAsyncHandler() {
           err?.message ||
           "Something went wrong";
 
-        if (statusCode === 401) {
-          try {
-            const result = await refreshUser(auth.user?.refreshToken);
+        if (statusCode === 403) {
+          errorToast("You don't have permission to do that.");
+          return null;
+        }
 
-            if (!result.success) {
-              dispatch(clearUser());
-              navigate("/login", { replace: true });
-              return null;
-            }
-
-            dispatch(setUser(result.data));
-
-            return await fn(...args);
-          } catch (error) {
-            dispatch(clearUser());
-            navigate("/login", { replace: true });
-            return null;
-          }
+        if (statusCode === 404) {
+          errorToast("Resource not found.");
+          return null;
         }
 
         errorToast(msg);
         console.error("Async Error:", err);
-
         throw err;
       }
     };

@@ -7,6 +7,7 @@ import moduleModel from "../models/modules";
 import lesson from "../models/lesson";
 import course from "../models/course";
 import axios from "axios";
+import { ENDPOINTS } from "../constants/endpoints";
 
 export const create = asyncHandler(async (req: Request, res: Response) => {
   const { courseId, moduleId, lessonId } = req.body;
@@ -181,21 +182,18 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
     query = videoBlock.query;
   }
 
-  const videos: any = await axios.get(
-    "https://www.googleapis.com/youtube/v3/search",
-    {
-      params: {
-        key: process.env.YOUTUBE_API_KEY,
-        part: "snippet",
-        q: query,
-        type: "video",
-        maxResults: 5,
-        videoCategoryId: "27", // Education
-        relevanceLanguage: "en",
-        safeSearch: "strict",
-      },
+  const videos: any = await axios.get(ENDPOINTS.YOUTUBE, {
+    params: {
+      key: process.env.YOUTUBE_API_KEY,
+      part: "snippet",
+      q: query,
+      type: "video",
+      maxResults: 5,
+      videoCategoryId: "27", // Education
+      relevanceLanguage: "en",
+      safeSearch: "strict",
     },
-  );
+  });
 
   const allIds = videos.data.items.map((item: any) => item.id.videoId);
 
@@ -215,3 +213,93 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 });
+
+export const updateLesson = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { courseId, moduleId, lessonId, complete } = req.body;
+
+    const userId = (req as any).user.id;
+
+    const courseData = await course.findOne({
+      slug: courseId,
+      isDeleted: false,
+      createdBy: userId,
+    });
+
+    if (!courseData) {
+      return errorResponse(res, {
+        statusCode: 404,
+        message: "Course not found",
+      });
+    }
+
+    const moduleData = await moduleModel.findOne({
+      slug: moduleId,
+      isDeleted: false,
+      course: courseData._id,
+    });
+
+    if (!moduleData) {
+      return errorResponse(res, {
+        statusCode: 404,
+        message: "Module not found",
+      });
+    }
+
+    const lessonData = await lesson.findOne({
+      slug: lessonId,
+      isDeleted: false,
+      module: moduleData._id,
+    });
+
+    if (!lessonData) {
+      return errorResponse(res, {
+        statusCode: 404,
+        message: "Lesson not found",
+      });
+    }
+
+    lessonData.isCompleted = complete;
+    await lessonData.save();
+
+    const totalLessons = await lesson.countDocuments({
+      module: moduleData._id,
+      isDeleted: false,
+    });
+
+    const completedLessons = await lesson.countDocuments({
+      module: moduleData._id,
+      isDeleted: false,
+      isCompleted: true,
+    });
+
+    moduleData.isCompleted =
+      totalLessons > 0 && totalLessons === completedLessons;
+    await moduleData.save();
+
+    const totalModules = await moduleModel.countDocuments({
+      course: courseData._id,
+      isDeleted: false,
+    });
+
+    const completedModules = await moduleModel.countDocuments({
+      course: courseData._id,
+      isDeleted: false,
+      isCompleted: true,
+    });
+
+    courseData.isCompleted =
+      totalModules > 0 && totalModules === completedModules;
+    await courseData.save();
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: "Lesson progress updated successfully",
+      data: {
+        lesson: lessonData,
+        moduleCompleted: moduleData.isCompleted,
+        courseCompleted: courseData.isCompleted,
+      },
+    });
+  },
+);

@@ -5,6 +5,7 @@ import LoginGuard from "./routes/LoginGuard";
 import HomePage from "./pages/home/Home";
 import Register from "./pages/auth/Register";
 import CoursePage from "./pages/course/Course";
+import Profile from "./pages/profile/Profile";
 
 function App() {
   return (
@@ -17,6 +18,8 @@ function App() {
             path="/course/:courseId/module/:moduleId/lesson/:lessonId"
             element={<CoursePage />}
           />
+
+          <Route path="/profile" element={<Profile />} />
         </Route>
 
         <Route

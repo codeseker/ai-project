@@ -1,24 +1,20 @@
 import type { LoginSchema } from "@/components/login-form";
 import type { ApiResponse } from "@/types/api-response";
-import axios from "axios";
-
-const baseUrl = import.meta.env.VITE_BACKEND_API_URL_LOCAL;
+import { api } from "@/api/axios";
 
 export interface LoginResponse {
   id: string;
   name: string;
   email: string;
   refreshToken: string;
-  token: string;
+  accessToken: string;
 }
 
 export async function login(
-  data: LoginSchema
+  data: LoginSchema,
 ): Promise<ApiResponse<LoginResponse>> {
-  const res = await axios.post(`${baseUrl}/auth/login`, data, {
-    withCredentials: true,
-  });
-  return res.data as ApiResponse<LoginResponse>;
+  const res = await api.post("/auth/login", data);
+  return res.data;
 }
 
 export interface RefreshUserResponse {
@@ -28,18 +24,18 @@ export interface RefreshUserResponse {
     email: string;
     refreshToken: string;
   };
-  token: string;
+  accessToken: string;
 }
 
 export async function refreshUser(
-  refreshToken: string | null | undefined
+  refreshToken: string | null | undefined,
 ): Promise<ApiResponse<RefreshUserResponse>> {
-  const res = await axios.post(
-    `${baseUrl}/auth/refresh`,
+  const res = await api.post(
+    "/auth/refresh",
+    { refreshToken },
     {
-      refreshToken,
+      withCredentials: true,
     },
-    { withCredentials: true }
   );
-  return res.data as ApiResponse<RefreshUserResponse>;
+  return res.data;
 }

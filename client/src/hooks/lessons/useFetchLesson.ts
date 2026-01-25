@@ -1,8 +1,6 @@
 import { generateLessonContent } from "@/actions/lesson";
-import type { RootState } from "@/store/store";
 import { useAsyncHandler } from "@/utils/async-handler";
 import { useQuery } from "@tanstack/react-query";
-import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 
 type LessonParams = {
@@ -12,13 +10,12 @@ type LessonParams = {
 };
 
 export default function useFetchLesson() {
-  const user = useSelector((state: RootState) => state.user);
   const { courseId, moduleId, lessonId } = useParams<LessonParams>();
 
   const asyncHandler = useAsyncHandler();
   const lessonGenerateSafe = asyncHandler(generateLessonContent);
 
-  const isEnabled = !!user.token && !!courseId && !!moduleId && !!lessonId;
+  const isEnabled = !!courseId && !!moduleId && !!lessonId;
 
   const {
     data: lessonData,
@@ -28,11 +25,11 @@ export default function useFetchLesson() {
   } = useQuery({
     queryKey: ["lesson", courseId, moduleId, lessonId],
     queryFn: async () => {
-      if (!courseId || !moduleId || !lessonId || !user.token) {
+      if (!courseId || !moduleId || !lessonId) {
         throw new Error("Missing required lesson params");
       }
 
-      return lessonGenerateSafe(user.token, {
+      return lessonGenerateSafe({
         courseId,
         moduleId,
         lessonId,

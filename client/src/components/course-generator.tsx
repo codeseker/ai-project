@@ -12,19 +12,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import useCreateCourse from "@/hooks/courses/useCreateCourse";
 
 export function CourseGenerator() {
   const [courseName, setCourseName] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
+  const { mutate, isPending } = useCreateCourse();
 
-  const handleGenerate = async () => {
+  const handleGenerate = () => {
     if (!courseName.trim()) return;
 
-    setIsGenerating(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log("Generated course:", courseName);
-    setCourseName("");
-    setIsGenerating(false);
+    mutate(courseName, {
+      onSuccess: () => {
+        setCourseName("");
+      },
+    });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -69,15 +70,15 @@ export function CourseGenerator() {
                 value={courseName}
                 onChange={(e) => setCourseName(e.target.value)}
                 onKeyDown={handleKeyDown}
-                disabled={isGenerating}
+                disabled={isPending}
               />
 
               <Button
                 onClick={handleGenerate}
-                disabled={!courseName.trim() || isGenerating}
+                disabled={!courseName.trim() || isPending}
                 className="gap-2"
               >
-                {isGenerating ? (
+                {isPending ? (
                   <>
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
                     Generating...

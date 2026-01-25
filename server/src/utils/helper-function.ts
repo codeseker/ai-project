@@ -1,3 +1,5 @@
+import path from "path";
+
 import { GenerativeModel } from "@google/generative-ai";
 import {
   intentSystemPrompt,
@@ -110,3 +112,14 @@ export async function generateUniqueSlug<T extends SlugDocument>({
 
   return slug;
 }
+
+export const getUploadPath = () => {
+  return path.join(__dirname, "../../public/uploads");
+};
+
+export const getUniqueFileName = (fileName: string) => {
+  const fileExtension = path.extname(fileName);
+  const fileNameWithoutExtension = path.basename(fileName, fileExtension);
+  const uniqueFileName = `${fileNameWithoutExtension}-${Date.now()}${fileExtension}`;
+  return uniqueFileName;
+};

@@ -13,6 +13,7 @@ export interface IUser extends Document {
   passwordResetExpires?: Date | null;
   refreshToken?: string | null;
   role?: Types.ObjectId | null;
+  avatar?: Types.ObjectId;
 
   // Custom instance method
   safeUser(): {
@@ -21,6 +22,10 @@ export interface IUser extends Document {
     email: string;
     refreshToken?: string | null;
   };
+
+  totalCourses?: number;
+  completedCourses?: number;
+  pendingCourses?: number;
 }
 
 const UserSchema: Schema<IUser> = new Schema<IUser>(
@@ -30,17 +35,23 @@ const UserSchema: Schema<IUser> = new Schema<IUser>(
     first_name: { type: String, required: true },
     last_name: { type: String, required: true },
     email: { type: String, required: true },
-    status: { type: String, enum: Object.values(UserStatus), default: UserStatus.PENDING },
+    status: {
+      type: String,
+      enum: Object.values(UserStatus),
+      default: UserStatus.PENDING,
+    },
     isDeleted: { type: Boolean, default: false },
     passwordResetToken: { type: String, default: null },
     passwordResetExpires: { type: Date, default: null },
     refreshToken: { type: String, default: null },
     role: { type: Schema.Types.ObjectId, ref: "Role", default: null },
+    avatar: { type: Schema.Types.ObjectId, ref: "Upload", default: null },
   },
   {
     timestamps: true,
     toJSON: { virtuals: true },
-  }
+    toObject: { virtuals: true },
+  },
 );
 
 // 3️⃣ Indexes
@@ -54,6 +65,30 @@ UserSchema.set("toJSON", {
     delete ret.password;
     return ret;
   },
+});
+
+// Total Courses
+UserSchema.virtual("totalCourses", {
+  ref: "Course",
+  localField: "_id",
+  foreignField: "createdBy",
+  count: true,
+});
+
+UserSchema.virtual("completedCourses", {
+  ref: "Course",
+  localField: "_id",
+  foreignField: "createdBy",
+  match: { isCompleted: true },
+  count: true,
+});
+
+UserSchema.virtual("pendingCourses", {
+  ref: "Course",
+  localField: "_id",
+  foreignField: "createdBy",
+  match: { isCompleted: false },
+  count: true,
 });
 
 UserSchema.methods.safeUser = function () {

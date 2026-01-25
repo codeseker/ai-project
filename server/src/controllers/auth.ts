@@ -32,7 +32,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 
   const accessToken = generateToken(
     { id: createdUser._id, email: email },
-    "2h"
+    "2h",
   );
 
   const refreshToken = generateToken({ id: createdUser._id }, "7d");
@@ -91,15 +91,6 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-export const getProfile = asyncHandler(async (req: Request, res: Response) => {
-  const user = (req as any).user;
-  return successResponse(res, {
-    statusCode: 200,
-    message: "User profile fetched successfully",
-    data: { user: user.toJSON() },
-  });
-});
-
 export const logout = asyncHandler(async (req: Request, res: Response) => {
   const user = (req as any).user;
   await User.findByIdAndUpdate(user._id, { refreshToken: null });
@@ -153,7 +144,7 @@ export const refreshToken = asyncHandler(
 
     const newAccessToken = generateToken(
       { id: user._id, email: user.email },
-      "2h"
+      "2h",
     );
 
     const newRefreshToken = generateToken({ id: user._id }, "7d");
@@ -163,7 +154,7 @@ export const refreshToken = asyncHandler(
       { refreshToken: newRefreshToken },
       {
         new: true,
-      }
+      },
     );
 
     if (!updatedUser) {
@@ -192,5 +183,5 @@ export const refreshToken = asyncHandler(
       message: "Token refreshed successfully",
       data: { token: newAccessToken, user: finalData },
     });
-  }
+  },
 );

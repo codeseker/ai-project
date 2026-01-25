@@ -55,6 +55,18 @@ tmp/
 temp/
 *.tmp
 
+# Temporary files
+server/public/tmp/
+server/public/tmp/*
+server/temp/
+server/*.tmp
+
+# Public
+server/public/uploads/
+server/public/uploads/*
+
+
+
 # IDE & Editor
 .vscode/
 .idea/

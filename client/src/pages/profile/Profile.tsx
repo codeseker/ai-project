@@ -15,13 +15,16 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store/store";
 
 export default function Profile() {
+  const stateUser = useSelector((state: RootState) => state.user);
   const [loading] = useState(false); // change to true to see skeleton
 
   const user = {
-    name: "John Doe",
-    email: "john@example.com",
+    name: stateUser.user?.name,
+    email: stateUser.user?.email,
     avatar: "",
   };
 

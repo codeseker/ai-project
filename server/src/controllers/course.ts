@@ -176,10 +176,10 @@ export const show = asyncHandler(async (req: Request, res: Response) => {
     })
     .populate({
       path: "modules",
-      select: "title description slug",
+      select: "title description slug isCompleted",
       populate: {
         path: "lessons",
-        select: "title order description estimatedMinutes slug",
+        select: "title order description estimatedMinutes slug isCompleted",
       },
     });
 

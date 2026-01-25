@@ -8,6 +8,9 @@ import CodeBlock from "@/components/blocks/CodeBlock";
 import HeadingBlock from "@/components/blocks/HeadingBlock";
 import ParagraphBlock from "@/components/blocks/ParagraphBlock";
 import McqBlock from "@/components/blocks/McqBlock";
+import useUpdateLesson from "@/hooks/lessons/useUpdateLesson";
+import { useState } from "react";
+import LessonCompleteCelebration from "@/components/lesson-celebration";
 
 interface LessonContentProps {
   lesson: Lesson;
@@ -21,8 +24,31 @@ export function LessonContent({
   courseTitle,
 }: LessonContentProps) {
   const { lessonData, isLoading, isError, error } = useFetchLesson();
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [lessonCompleted, setLessonCompleted] = useState(lesson.isCompleted);
 
-  /* ------------------ LOADING ------------------ */
+  const { mutateAsync: updateLesson } = useUpdateLesson();
+
+  const handleCompleteLesson = async (complete: boolean) => {
+    if (complete) {
+      setShowCelebration(true);
+    }
+    const result = await updateLesson(complete);
+    if (!result || !result.success) {
+      return;
+    }
+
+    setLessonCompleted(!lessonCompleted);
+  };
+
+  if (showCelebration) {
+    return (
+      <LessonCompleteCelebration
+        open={showCelebration}
+        onDone={() => setShowCelebration(false)}
+      />
+    );
+  }
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -34,7 +60,6 @@ export function LessonContent({
     );
   }
 
-  /* ------------------ ERROR ------------------ */
   if (isError && error) {
     return (
       <div className="py-20 text-center">
@@ -68,7 +93,11 @@ export function LessonContent({
           </div>
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="h-4 w-4 text-primary" />
-            <span>Not completed</span>
+            {lessonCompleted ? (
+              <span className="text-destructive">Completed</span>
+            ) : (
+              <span className="text-accent-foreground">Not completed</span>
+            )}
           </div>
         </div>
       </div>
@@ -123,11 +152,21 @@ export function LessonContent({
 
       {/* Footer Actions */}
       <div className="mt-12 flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
-        <Button variant="default">Previous Lesson</Button>
+        <Button variant="default" className="cursor-pointer">
+          Previous Lesson
+        </Button>
 
-        <Button variant="default">Mark as Complete</Button>
+        <Button
+          variant="default"
+          className="cursor-pointer"
+          onClick={() => handleCompleteLesson(!lessonCompleted)}
+        >
+          {lessonCompleted ? "Mark as Incomplete" : "Mark as Complete"}
+        </Button>
 
-        <Button variant="default">Next Lesson</Button>
+        <Button variant="default" className="cursor-pointer">
+          Next Lesson
+        </Button>
       </div>
     </div>
   );

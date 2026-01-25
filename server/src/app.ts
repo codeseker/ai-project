@@ -5,19 +5,33 @@ import { errorHandler } from "./middlewares/error-handler";
 import router from "./routes/mainRoutes";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import fileUpload from "express-fileupload";
+import path from "path";
 
 const app: Application = express();
-
 
 const PORT: number = parseInt(process.env.PORT || "8000", 10);
 const NODE_ENV: string = process.env.NODE_ENV || "development";
 
 // Middlewares
 app.use(cookieParser());
-app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:4173"],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:4173"],
+    credentials: true,
+  }),
+);
+app.use("/uploads", express.static(path.join(__dirname, "../public/uploads")));
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+    createParentPath: true,
+    limits: {
+      fileSize: 1024 * 1024 * 5,
+    },
+  }),
+);
 app.use(express.json());
 
 // Routes
@@ -49,6 +63,5 @@ const startServer = async (): Promise<void> => {
     process.exit(1);
   }
 };
-
 
 startServer();

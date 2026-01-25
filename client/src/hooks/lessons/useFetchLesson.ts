@@ -3,7 +3,7 @@ import { useAsyncHandler } from "@/utils/async-handler";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 
-type LessonParams = {
+export type LessonParams = {
   courseId: string;
   moduleId: string;
   lessonId: string;

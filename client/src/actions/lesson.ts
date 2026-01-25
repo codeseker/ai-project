@@ -53,3 +53,24 @@ export async function generateLessonContent({
 
   return res.data;
 }
+
+export async function updateLesson({
+  lessonId,
+  courseId,
+  moduleId,
+  complete,
+}: {
+  lessonId: string;
+  courseId: string;
+  moduleId: string;
+  complete: boolean;
+}): Promise<ApiResponse<LessonContentResponse>> {
+  const res = await api.put(`/lesson/${lessonId}/update`, {
+    lessonId,
+    courseId,
+    moduleId,
+    complete,
+  });
+
+  return res.data;
+}

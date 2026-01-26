@@ -19,11 +19,13 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useRegister } from "@/hooks/auth/useRegister";
 
 const registerSchema = z
   .object({
     first_name: z.string().min(1, "First name is required"),
     last_name: z.string().min(1, "Last name is required"),
+    username: z.string().min(1, "Username is required"),
     email: z
       .string()
       .min(1, "Email is required")
@@ -43,14 +45,9 @@ export type RegisterSchema = z.infer<typeof registerSchema>;
 
 type RegisterFormProps = {
   className?: string;
-  onSubmit: (data: RegisterSchema) => void | Promise<void>;
 } & Omit<React.ComponentProps<"div">, "onSubmit">;
 
-export function SignupForm({
-  className,
-  onSubmit,
-  ...props
-}: RegisterFormProps) {
+export function SignupForm({ className, ...props }: RegisterFormProps) {
   const {
     register,
     handleSubmit,
@@ -59,6 +56,12 @@ export function SignupForm({
     resolver: zodResolver(registerSchema),
     mode: "onChange",
   });
+
+  const { handleRegister, loading } = useRegister();
+
+  const onSubmit = async (data: RegisterSchema) => {
+    await handleRegister(data);
+  };
 
   return (
     <div
@@ -83,6 +86,19 @@ export function SignupForm({
             <FieldGroup>
               {/* First + Last name */}
               <div className="grid grid-cols-2 gap-3">
+                <Field className="space-y-2">
+                  <FieldLabel htmlFor="username">Username</FieldLabel>
+                  <Input
+                    id="username"
+                    placeholder="John"
+                    {...register("username")}
+                  />
+                  {errors.username && (
+                    <p className="text-sm font-medium text-destructive">
+                      {errors.username.message}
+                    </p>
+                  )}
+                </Field>
                 <Field className="space-y-2">
                   <FieldLabel htmlFor="first_name">First name</FieldLabel>
                   <Input
@@ -168,8 +184,8 @@ export function SignupForm({
 
               {/* Actions */}
               <Field className="space-y-3 pt-2">
-                <Button type="submit" className="w-full">
-                  Create account
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Loading..." : "Register"}
                 </Button>
 
                 <Button variant="outline" type="button" className="w-full">

@@ -1,8 +1,23 @@
 import type { LoginSchema } from "@/components/login-form";
 import type { ApiResponse } from "@/types/api-response";
 import { api } from "@/api/axios";
+import type { RegisterSchema } from "@/components/signup-form";
 
 export interface LoginResponse {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    refreshToken: string;
+    avatar?: {
+      _id: string;
+      url: string;
+    } | null;
+  };
+  token: string;
+}
+
+export interface RegisterResponse {
   user: {
     id: string;
     name: string;
@@ -43,5 +58,18 @@ export async function refreshUser(
       withCredentials: true,
     },
   );
+  return res.data;
+}
+
+export async function register(
+  data: RegisterSchema,
+): Promise<ApiResponse<RegisterResponse>> {
+  const res = await api.post("/auth/register", {
+    username: data.username,
+    email: data.email,
+    password: data.password,
+    firstName: data.first_name,
+    lastName: data.last_name,
+  });
   return res.data;
 }

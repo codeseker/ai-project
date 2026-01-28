@@ -29,14 +29,17 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import useCoursesFetch from "@/hooks/courses/useFetchCourses";
 import { toggleTheme } from "@/store/slices/theme";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { clearUser } from "@/store/slices/user";
+import type { RootState } from "@/store/store";
+import { getImageUrl } from "@/utils/getImageUrl";
 
 export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isMobile = useIsMobile();
+  const user = useSelector((state: RootState) => state.user);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -169,54 +172,81 @@ export function AppSidebar() {
           </div>
 
           {/* PROFILE */}
-          <div className="border-t border-sidebar-border p-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start h-14 gap-3 px-3"
-                >
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src="/placeholder-user.jpg" />
-                    <AvatarFallback>JD</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col items-start text-left">
-                    <span className="text-sm font-medium">John Doe</span>
-                    <span className="text-xs text-sidebar-foreground/60">
-                      john@example.com
-                    </span>
-                  </div>
-                </Button>
-              </DropdownMenuTrigger>
+          {user?.user && (
+            <div className="border-t border-sidebar-border p-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start h-14 gap-3 px-3"
+                  >
+                    {(() => {
+                      const { name, email, avatar } = user.user;
 
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link to="/profile" className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    Profile
-                  </Link>
-                </DropdownMenuItem>
+                      const avatarUrl = avatar?.url
+                        ? getImageUrl(avatar.url)
+                        : undefined;
 
-                <DropdownMenuItem
-                  onClick={handleToggleTheme}
-                  className="flex items-center gap-2"
-                >
-                  <SunMoon className="h-4 w-4" />
-                  Toggle Theme
-                </DropdownMenuItem>
+                      console.log("AVATAR: ", avatarUrl);
+                      const initials =
+                        name
+                          ?.split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .toUpperCase() || "U";
 
-                <DropdownMenuSeparator />
+                      return (
+                        <>
+                          <Avatar className="h-9 w-9">
+                            {avatarUrl && <AvatarImage src={avatarUrl} />}
+                            <AvatarFallback>{initials}</AvatarFallback>
+                          </Avatar>
 
-                <DropdownMenuItem
-                  onClick={handleLogout}
-                  className="flex items-center gap-2 text-destructive"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                          <div className="flex flex-col items-start text-left overflow-hidden">
+                            <span className="text-sm font-medium truncate max-w-[140px]">
+                              {name || "User"}
+                            </span>
+                            {email && (
+                              <span className="text-xs text-sidebar-foreground/60 truncate max-w-[140px]">
+                                {email}
+                              </span>
+                            )}
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={handleToggleTheme}
+                    className="flex items-center gap-2"
+                  >
+                    <SunMoon className="h-4 w-4" />
+                    Toggle Theme
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 text-destructive"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
         </div>
       </aside>
     </>

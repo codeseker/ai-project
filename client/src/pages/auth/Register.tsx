@@ -2,10 +2,8 @@ import { SignupForm } from "@/components/signup-form";
 
 function Register() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
-      <div className="w-full max-w-md">
-        <SignupForm />
-      </div>
+    <div className="min-h-screen flex items-center justify-center px-4 bg-background text-foreground">
+      <SignupForm />
     </div>
   );
 }

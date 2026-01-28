@@ -63,7 +63,7 @@ export function LessonContent({
   if (isError && error) {
     return (
       <div className="py-20 text-center">
-        <p className="text-sm text-destructive">
+        <p className="text-xs text-destructive">
           Failed to load lesson content.
         </p>
         <p className="mt-2 text-xs text-muted-foreground">{error.message}</p>

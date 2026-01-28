@@ -263,9 +263,11 @@ export const socialLoginGoogle = asyncHandler(
 
     user.refreshToken = refreshToken;
 
+    let avatarId = null;
+
     if (picture) {
       if (user.avatar) {
-        await Upload.findByIdAndUpdate(
+        const avt = await Upload.findByIdAndUpdate(
           user.avatar,
           {
             url: picture,
@@ -276,6 +278,15 @@ export const socialLoginGoogle = asyncHandler(
           },
           { new: true },
         );
+
+        if (!avt) {
+          return errorResponse(res, {
+            statusCode: 500,
+            message: "Something went wrong",
+          });
+        }
+
+        avatarId = avt._id;
       } else {
         const uploadDoc = await Upload.create({
           url: picture,
@@ -287,6 +298,14 @@ export const socialLoginGoogle = asyncHandler(
           isPublic: true,
         });
 
+        if (!uploadDoc) {
+          return errorResponse(res, {
+            statusCode: 500,
+            message: "Something went wrong",
+          });
+        }
+
+        avatarId = uploadDoc._id;
         user.avatar = uploadDoc._id as any;
       }
     }
@@ -304,7 +323,13 @@ export const socialLoginGoogle = asyncHandler(
       statusCode: 200,
       message: "Login successful",
       data: {
-        user: { ...user.safeUser(), avatar: picture },
+        user: {
+          ...user.safeUser(),
+          avatar: {
+            _id: avatarId,
+            url: picture,
+          },
+        },
         token: accessToken,
       },
     });

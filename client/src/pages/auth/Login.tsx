@@ -6,7 +6,7 @@ function Login() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="min-h-screen flex items-center justify-center px-4 bg-background text-foreground">
         <div className="w-full max-w-md space-y-4 text-center">
           <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
           <p className="text-sm text-muted-foreground">Signing you in…</p>
@@ -16,10 +16,8 @@ function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
-      <div className="w-full max-w-md">
-        <LoginForm onSubmit={handleLogin} />
-      </div>
+    <div className="min-h-screen flex items-center justify-center px-4 bg-background text-foreground">
+      <LoginForm onSubmit={handleLogin} />
     </div>
   );
 }

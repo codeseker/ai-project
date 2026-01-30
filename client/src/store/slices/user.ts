@@ -32,8 +32,13 @@ export const userSlice = createSlice({
       state.user = null;
       state.token = null;
     },
+    setAvatar: (state, action) => {
+      if (state.user) {
+        state.user.avatar = action.payload;
+      }
+    },
   },
 });
 
-export const { setUser, clearUser } = userSlice.actions;
+export const { setUser, clearUser, setAvatar } = userSlice.actions;
 export default userSlice.reducer;

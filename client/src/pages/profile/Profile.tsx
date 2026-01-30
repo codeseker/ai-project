@@ -1,6 +1,4 @@
-import { useState } from "react";
-import { AppSidebar } from "@/components/app-sidebar";
-
+import { useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,13 +18,11 @@ import type { RootState } from "@/store/store";
 import { getImageUrl } from "@/utils/getImageUrl";
 import useFetchCoursesWithStats from "@/hooks/courses/useFetchCoursesWithStats";
 import useDeleteCourse from "@/hooks/courses/useDeleteCourse";
-import { Loader2 } from "lucide-react";
+import { Loader2, BookOpen, Trophy, Clock } from "lucide-react";
+import useAvatarUpload from "@/hooks/user/useAvatarUpload";
 
 export default function Profile() {
   const stateUser = useSelector((state: RootState) => state.user);
-  const [loading] = useState(false);
-
-  console.log("USER: ", stateUser);
 
   const user = {
     name: stateUser.user?.name,
@@ -39,46 +35,67 @@ export default function Profile() {
   const { coursesWithStatsData, isLoading, error } = useFetchCoursesWithStats();
   const { mutateAsync: deleteCourse, isPending: deleteCoursePending } =
     useDeleteCourse();
+  const { handleFileChange } = useAvatarUpload();
 
-  if (isLoading) {
-    return <Skeleton className="h-28 w-28 rounded-full" />;
-  }
+  const courses = coursesWithStatsData?.data?.courses || [];
 
-  if (error) {
-    return <p>{error.message}</p>;
-  }
+  const stats = useMemo(() => {
+    const total = courses.length;
+    const completed = courses.filter((c) => c.stats.progress === 100).length;
+    const inProgress = courses.filter(
+      (c) => c.stats.progress > 0 && c.stats.progress < 100,
+    ).length;
+
+    return [
+      { label: "Total Courses", value: total, icon: BookOpen },
+      { label: "Completed", value: completed, icon: Trophy },
+      { label: "In Progress", value: inProgress, icon: Clock },
+    ];
+  }, [courses]);
 
   const handleDeleteCourse = async (courseId: string) => {
     await deleteCourse(courseId);
   };
 
+  if (error) {
+    return <p className="p-6 text-destructive">{error.message}</p>;
+  }
+
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-8 p-6">
-      <h1 className="text-3xl font-bold tracking-tight max-md:pl-8 max-md:mb-3">
-        Profile
-      </h1>
+    <div className="mx-auto w-full max-w-6xl space-y-8 p-6 text-foreground">
+      {/* PAGE TITLE */}
+      <div className="space-y-1">
+        <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
+        <p className="text-muted-foreground text-sm">
+          Manage your account and track your learning progress
+        </p>
+      </div>
 
       {/* PROFILE HEADER */}
-      <Card className="overflow-hidden border-border/60 shadow-sm">
-        <CardContent className="flex flex-col md:flex-row items-center gap-6 p-8">
-          {loading ? (
+      <Card className="border-border/60 shadow-sm">
+        <CardContent className="flex flex-col md:flex-row items-center gap-8 p-8">
+          {isLoading ? (
             <Skeleton className="h-28 w-28 rounded-full" />
           ) : (
-            <Avatar className="h-28 w-28 ring-4 ring-background shadow-md">
+            <Avatar className="h-28 w-28 shadow-md rounded-full overflow-hidden">
               {user.avatar ? (
-                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarImage
+                  src={user.avatar}
+                  alt={user.name}
+                  className="w-full h-full object-cover"
+                />
               ) : (
-                <AvatarFallback className="text-2xl">
+                <AvatarFallback className="text-2xl flex items-center justify-center bg-gray-200 dark:bg-gray-700">
                   {user.name?.charAt(0) ?? "U"}
                 </AvatarFallback>
               )}
             </Avatar>
           )}
 
-          <div className="flex-1 text-center md:text-left space-y-2">
-            {loading ? (
+          <div className="flex-1 text-center md:text-left space-y-3">
+            {isLoading ? (
               <>
-                <Skeleton className="h-7 w-48" />
+                <Skeleton className="h-7 w-52" />
                 <Skeleton className="h-4 w-64" />
               </>
             ) : (
@@ -90,13 +107,42 @@ export default function Profile() {
               </>
             )}
 
-            <div className="flex flex-wrap gap-3 justify-center md:justify-start pt-3">
+            <div className="flex flex-wrap items-center gap-3 justify-center md:justify-start pt-2">
+              <Input
+                accept="image/*"
+                onChange={handleFileChange}
+                id="avatar-upload"
+                type="file"
+                className="hidden"
+              />
+
+              {/* Modern Button */}
               <Label htmlFor="avatar-upload" className="cursor-pointer">
-                <Button variant="secondary" size="sm" asChild>
-                  <span>Change Avatar</span>
+                <Button
+                  variant="default"
+                  size="sm"
+                  asChild
+                  className="flex items-center gap-2 px-4 py-2 rounded-md shadow-sm hover:shadow-md transition-shadow duration-200 bg-primary text-white hover:bg-primary/90"
+                >
+                  <span className="flex items-center gap-1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Change Avatar
+                  </span>
                 </Button>
               </Label>
-              <Input id="avatar-upload" type="file" className="hidden" />
             </div>
           </div>
         </CardContent>
@@ -104,46 +150,62 @@ export default function Profile() {
 
       {/* STATS */}
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {[
-          { label: "Total Courses", value: 2 },
-          { label: "Completed", value: 1 },
-          { label: "In Progress", value: 1 },
-        ].map((stat, i) => (
-          <Card
-            key={i}
-            className="border-border/60 shadow-sm hover:shadow-md transition-shadow"
-          >
-            <CardContent className="p-6 space-y-2">
-              <p className="text-sm text-muted-foreground">{stat.label}</p>
-              {loading ? (
-                <Skeleton className="h-8 w-16" />
-              ) : (
-                <p className="text-3xl font-semibold tracking-tight">
-                  {stat.value}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+        {stats.map((stat, i) => {
+          const Icon = stat.icon;
+          return (
+            <Card
+              key={i}
+              className="border-border/60 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <CardContent className="p-6 flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    <p className="text-3xl font-semibold tracking-tight">
+                      {stat.value}
+                    </p>
+                  )}
+                </div>
+                <div className="p-3 rounded-lg bg-muted/50">
+                  <Icon className="h-5 w-5 text-muted-foreground" />
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* COURSES */}
       <Card className="border-border/60 shadow-sm">
-        <CardHeader className="pb-2">
+        <CardHeader>
           <CardTitle className="text-xl font-semibold tracking-tight">
             Your Courses
           </CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {loading ? (
+          {isLoading ? (
             <>
-              <Skeleton className="h-20 w-full" />
-              <Skeleton className="h-20 w-full" />
+              {[...Array(3)].map((_, i) => (
+                <div
+                  key={i}
+                  className="rounded-xl border border-border/60 p-5 space-y-3"
+                >
+                  <Skeleton className="h-5 w-48" />
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-5/6" />
+                </div>
+              ))}
             </>
+          ) : courses.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              No courses yet. Start learning to see progress here.
+            </div>
           ) : (
             <Accordion type="multiple" className="space-y-4">
-              {coursesWithStatsData?.data?.courses.map((course) => (
+              {courses.map((course) => (
                 <AccordionItem
                   key={course.id}
                   value={`course-${course.id}`}
@@ -168,10 +230,10 @@ export default function Profile() {
                         variant="ghost"
                         disabled={deleteCoursePending}
                         size="sm"
-                        className="text-destructive hover:text-destructive cursor-pointer"
+                        className="text-destructive hover:text-destructive"
                       >
                         {deleteCoursePending ? (
-                          <Loader2 className="animate-spin" />
+                          <Loader2 className="animate-spin h-4 w-4" />
                         ) : (
                           "Delete"
                         )}

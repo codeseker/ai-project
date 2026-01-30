@@ -9,9 +9,11 @@ import HeadingBlock from "@/components/blocks/HeadingBlock";
 import ParagraphBlock from "@/components/blocks/ParagraphBlock";
 import McqBlock from "@/components/blocks/McqBlock";
 import useUpdateLesson from "@/hooks/lessons/useUpdateLesson";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LessonCompleteCelebration from "@/components/lesson-celebration";
 import { useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { LessonStickyFooter } from "@/components/lesson-footer";
 
 interface LessonContentProps {
   lesson: Lesson;
@@ -28,10 +30,13 @@ export function LessonContent({
 }: LessonContentProps) {
   const navigate = useNavigate();
   const { lessonData, isLoading, isError, error } = useFetchLesson();
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [lessonCompleted, setLessonCompleted] = useState(lesson.isCompleted);
-
+  const [showCelebration, setShowCelebration] = useState<boolean>(false);
+  const [lessonCompleted, setLessonCompleted] = useState<boolean>(false);
   const { mutateAsync: updateLesson } = useUpdateLesson();
+
+  useEffect(() => {
+    setLessonCompleted(lesson.isCompleted);
+  }, [lesson]);
 
   const handleCompleteLesson = async (complete: boolean) => {
     if (complete) {
@@ -178,42 +183,14 @@ export function LessonContent({
         )}
       </div>
 
-      {/* Footer Actions */}
-      <div className="mt-12 flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
-        {lessonData?.navigation?.prevModuleSlug != null &&
-          lessonData?.navigation?.previousLessonSlug != null && (
-            <Button
-              variant="default"
-              className="cursor-pointer"
-              onClick={handlePrevLesson}
-            >
-              Previous Lesson
-            </Button>
-          )}
-
-        <Button
-          variant="default"
-          className="cursor-pointer"
-          onClick={() => handleCompleteLesson(!lessonCompleted)}
-        >
-          {lessonCompleted ? "Mark as Incomplete" : "Mark as Complete"}
-        </Button>
-
-        {lessonData?.navigation?.nextModuleSlug != null &&
-          lessonData?.navigation?.nextLessonSlug != null && (
-            <Button
-              variant="default"
-              disabled={
-                lessonData?.navigation?.nextLessonSlug === null &&
-                lessonData?.navigation?.nextModuleSlug === null
-              }
-              className="cursor-pointer"
-              onClick={handleNextLesson}
-            >
-              Next Lesson
-            </Button>
-          )}
-      </div>
+      <LessonStickyFooter
+        onPrevLesson={handlePrevLesson}
+        onNextLesson={handleNextLesson}
+        onCompleteLesson={handleCompleteLesson}
+        lessonCompleted={lessonCompleted}
+        hasPrevLesson={true}
+        hasNextLesson={true}
+      />
     </div>
   );
 }

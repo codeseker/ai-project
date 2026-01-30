@@ -32,6 +32,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     last_name: lastName,
     status: UserStatus.PENDING,
     role: role._id,
+    authProvider: AuthProviders.LOCAL,
   });
 
   const accessToken = generateToken(

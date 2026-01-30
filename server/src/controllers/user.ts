@@ -104,6 +104,7 @@ export const uploadAvatar = asyncHandler(
       statusCode: 200,
       message: "Avatar uploaded successfully",
       data: {
+        _id: uploadDoc._id,
         url: uploadDoc.url,
       },
     });

@@ -94,3 +94,19 @@ export async function googleAuth(
   const res = await api.post("/auth/social-login/google", { code });
   return res.data;
 }
+
+export interface IUploadAvatarResponse {
+  _id: string
+  url: string;
+}
+
+export async function uploadAvatar(
+  formData: FormData,
+): Promise<ApiResponse<IUploadAvatarResponse>> {
+  const res = await api.post("/user/upload-avatar", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return res.data;
+}

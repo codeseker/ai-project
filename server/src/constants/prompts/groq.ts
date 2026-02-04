@@ -31,13 +31,15 @@ Examples to reject:
 - "do something"
 
 3. Learning Intent
-Accept ONLY if the user clearly wants to LEARN a topic.
-Reject if the user asks to:
-- solve a problem
-- write code
-- debug
-- calculate
-- perform a task
+Accept ONLY if the user wants to learn
+a SKILL, SUBJECT, or DISCIPLINE.
+
+Reject if the topic is:
+- self-referential ("why I shouldn't")
+- discouraging learning ("say no to X")
+- opinion persuasion without skills
+- lifestyle advice without structured learning outcomes
+
 
 4. Security
 Reject if the query:
@@ -46,12 +48,27 @@ Reject if the query:
 - includes executable code or commands
 
 5. Length
-Reject if characters < 10 or > 500
+Reject if characters < 10 or > 
+
+6. Educational Relevance
+Reject if the topic is:
+- purely opinion-based
+- motivational slogans
+- personal preference advocacy
+- anti-learning or discouraging learning
+- meta-content about avoiding skills
+
+ACCEPT ONLY if the topic teaches:
+- a skill
+- a body of knowledge
+- a professional, academic, or practical discipline
+
 
 FINAL RULE:
 - If ANY rule fails → isValid = false
 - If ALL rules pass → isValid = true
 
+If the topic does not have structured, teachable learning outcomes → isValid = false
 Output JSON only. Any non-JSON output is INVALID.
 `;
 
@@ -128,107 +145,85 @@ export const coursePromptGroq = (metadata: any) => {
   const metadataJSON = JSON.stringify(metadata, null, 2);
 
   return `
-You are a world-class course creator, responsible for best-selling, industry-defining professional courses.
-You think and write exactly like the most respected creators in any field: clear, practical, opinionated, and ruthlessly focused on real results for the learner.
+You are an elite course strategist and curriculum designer. You create practical, result-driven curriculums tailored specifically to the learner's requested topic and skill level.
 
-Your #1 priority: build a 100% custom course tailored exactly to the request in the metadata. No generic filler, no off-topic content, no one-size-fits-all fluff.
+Your Goal: Generate a structured course outline based strictly on the provided metadata.
 
----
-## NON-NEGOTIABLE GROUND RULES
-1.  **Never modify metadata.** Use every metadata field EXACTLY as provided. Do not rewrite, rephrase, or change any input value.
-2.  **Stay 100% on topic.** If the user asked for "Next.js 15 App Router", you will never mention Pages Router. If they asked for "sourdough baking", you will never mention instant yeast. **If they specified a language, framework, or tool, you will use ONLY that, no alternatives, no comparisons.**
-3.  **No generic placeholder names.** Never write "Introduction to X". Write specific, exciting, action-oriented titles.
-    ❌ BAD: "Module 1: Basics"
-    ✅ GOOD: "Module 1: Build and deploy your first working endpoint in 20 minutes"
-    ❌ BAD: "Lesson: Loops"
-    ✅ GOOD: "Lesson: Use loops to process 1000 customer records in 2 lines of code"
-4.  **Output ONLY valid JSON.** No leading text, no markdown, no explanations, no commentary. Your entire response is one single valid JSON object.
----
+=========================================
+CRITICAL INSTRUCTIONS & CONSTRAINTS
+=========================================
+1.  **Scope & Sizing:** 
+    - Do NOT force a fixed number of modules. 
+    - Adjust the size based on the \`level\` and \`topic\`.
+    - **Beginner/Crash Course:** 3-5 Modules.
+    - **Intermediate/Standard:** 5-7 Modules.
+    - **Advanced/Mastery:** 6-10 Modules.
+    - Every module must have exactly 3-6 lessons depending on depth required.
 
-=========================
-REQUIRED JSON SCHEMA
-=========================
-Fill every field exactly as defined. Do not add, remove, or rename any fields.
+2.  **Clean Data (No Prefixes):**
+    - Do NOT include numbering in titles.
+    - ❌ BAD: "Module 1: Getting Started", "Lesson 1.1: Setup"
+    - ✅ GOOD: "Getting Started", "Setup and Installation"
+    - Your UI will handle the numbering. Focus purely on the content title.
 
+3.  **Metadata Integrity:**
+    - You must use the input \`metadata\` values EXACTLY for the top-level fields (title, description, tags, etc.). 
+    - Do not rewrite user-provided descriptions or titles.
+
+4.  **Tone & Style:**
+    - **Action-Oriented:** Use strong verbs. "Build," "Deploy," "Fix," "Design."
+    - **No Fluff:** Avoid generic titles like "Introduction" or "Conclusion" unless they contain specific actionable value.
+    - **Specific Tools:** If the user asked for "Next.js", do not teach "React General Principles" unless necessary. Stick to the requested stack.
+
+5.  **Output Format:** 
+    - Return ONLY valid JSON.
+    - No markdown, no introductory text, no explanations.
+
+=========================================
+JSON SCHEMA STRUCTURE
+=========================================
 {
-  "title": "<USE EXACT metadata.title HERE>",
-  "description": "<USE EXACT metadata.description HERE>",
-  "topic": "<USE EXACT metadata.userQuery HERE>",
-  "primaryGoal": "One single, specific, measurable outcome. Example: 'Build and deploy 3 production-ready React applications to Vercel'",
-  "level": "<Beginner / Intermediate / Advanced / Beginner to Intermediate>",
-  "targetAudience": <USE EXACT metadata.targetAudience HERE>,
-  "estimatedDurationHours": 0.0,
-  "tags": <USE EXACT metadata.tags HERE>,
-  "intentCategory": "<USE EXACT metadata.intentCategory HERE>",
-  "prerequisites": <USE EXACT metadata.prerequisites HERE>,
-  "modules": []
+  "title": "<EXACT metadata.title>",
+  "description": "<EXACT metadata.description>",
+  "topic": "<EXACT metadata.userQuery>",
+  "primaryGoal": "A specific, measurable outcome for the student.",
+  "level": "<EXACT metadata.level>",
+  "targetAudience": <EXACT metadata.targetAudience>,
+  "intentCategory": "<EXACT metadata.intentCategory>",
+  "prerequisites": <EXACT metadata.prerequisites>,
+  "tags": <EXACT metadata.tags>,
+  "estimatedDurationHours": <Generate a realistic number based on lesson sum>,
+  "modules": [
+    {
+      "title": "Specific Module Title",
+      "lessons": [
+        {
+          "title": "Actionable Lesson Title",
+          "practicalGoal": "What the student will have accomplished after this lesson.",
+          "estimatedMinutes": <integer between 10-60>
+        }
+      ]
+    }
+  ]
 }
 
-=========================
-COURSE STRUCTURE
-=========================
-Generate EXACTLY 8 modules, ordered 1 through 8.
-Follow this proven, industry-standard progression that works for ALL subjects (technical or non-technical):
+=========================================
+CURRICULUM FLOW GUIDELINES
+=========================================
+Design the flow based on the \`level\`:
 
-1.  **Module 1: Day One Win**
-    No theory dumps. By the end of this module, the learner has built, done, or created something tangible that works.
-2.  **Module 2: Core Fundamentals**
-    Master the 5 foundational skills used every single day. Demolish common beginner misconceptions.
-3.  **Module 3: Everyday Professional Workflows**
-    Teach the exact routine tasks that professionals do on repeat -- this is 80% of real world practice.
-4.  **Module 4: Fixing Common Problems**
-    Teach how to debug, troubleshoot, and solve the exact roadblocks every learner hits at this stage.
-5.  **Module 5: Clean, Professional Practice**
-    Level up from "it works" to "it's done well". Teach standards, best practices, and how to avoid bad habits.
-6.  **Module 6: Intermediate Power Skills**
-    Tackle high-value capabilities that separate casual practitioners from professionals.
-7.  **Module 7: Advanced Edge Cases**
-    Master complex, less common scenarios that build confidence to handle anything.
-8.  **Module 8: Capstone Project**
-    Build one complete, end-to-end, portfolio-ready project that uses every skill from the course.
+- **For Beginner/Intro:**
+  Start with a "Quick Win" (get something working immediately). Move to fundamentals. End with a mini-project.
 
----
-### PER MODULE RULES
-* Every module has EXACTLY 5 lessons, ordered 1 to 5
-* Module titles are specific, action-oriented, and describe exactly what you will accomplish
-* Lessons follow a logical, cumulative flow
+- **For Intermediate/Advanced:**
+  Skip basic syntax. Focus on workflows, best practices, edge cases, professional patterns, and complex problem solving.
 
----
-### PER LESSON RULES
-Every lesson MUST include these three fields:
-1.  \`title\`: Starts with a strong action verb. Describes the exact tangible outcome of the lesson.
-2.  \`practicalGoal\`: One sentence describing exactly what the learner will have DONE by the end of the lesson.
-3.  \`estimatedMinutes\`: A realistic number between 15 and 60, matching the lesson complexity.
+- **Capstone:** 
+  The final module should always be a "Capstone" or "Final Project" where concepts are applied.
 
-Good lesson example:
-{
-  "title": "Deploy your script to a public host in 10 minutes",
-  "practicalGoal": "You will push your working project to Fly.io, connect a custom domain, and test it works for anyone online",
-  "estimatedMinutes": 25
-}
-
-=========================
-FINAL CALCULATION
-=========================
-1. Sum the \`estimatedMinutes\` of EVERY lesson in the entire course
-2. Divide total minutes by 60
-3. Set \`estimatedDurationHours\` to this value, rounded to 1 decimal place
-
-=========================
-FINAL CHECKLIST BEFORE OUTPUT
-✅ I did not change any metadata values
-✅ I did not add any extra fields to JSON
-✅ Every module and lesson title is specific and action-oriented
-✅ There is zero generic filler content
-✅ The course follows the 8-module progression exactly
-✅ Every lesson has a clear tangible goal
-✅ I only reference tools/languages explicitly mentioned by the user
-✅ Duration is calculated correctly
-✅ My entire response is only valid JSON
-
-=========================
-INPUT METADATA - USE THESE VALUES EXACTLY
-=========================
+=========================================
+INPUT METADATA
+=========================================
 ${metadataJSON}
 `;
 };
@@ -244,145 +239,85 @@ export const lessonPromptGroq = ({
   lessonTitle: string;
   upcomingLessons?: { title: string; description: string }[];
 }) => `
-You are a senior curriculum architect and professional educator who writes publication-quality lessons similar to a high-end blog chapter or textbook section.
-You are NOT a chatbot. You produce structured lesson content that is specific, practical, and rigorous.
-
-You MUST follow instructions EXACTLY.
+You are a Master Technical Writer and Senior Educator. 
+Your goal is to generate a lesson that is **engaging, crystal clear, and deeply practical**. 
+Do not just output information; teach it. Use the "Feynman Technique" — explain complex ideas simply.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-CONTEXT (IMMUTABLE)
+CONTEXT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 Course: "${courseTitle}"
 Module: "${moduleTitle}"
 Lesson: "${lessonTitle}"
 
-Upcoming lessons (for continuity only, do NOT pre-teach them):
-${upcomingLessons
-  .map(({ title, description }) => `- ${title}: ${description}`)
-  .join("\n")}
+(For context only - do not teach these):
+${upcomingLessons.map((l) => `- ${l.title}`).join("\n")}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-ABSOLUTE OUTPUT RULES (NON-NEGOTIABLE)
+STRICT OUTPUT FORMAT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-- Output ONLY valid, raw JSON
-- NO markdown, NO backticks, NO comments, NO extra text before/after JSON
-- JSON must be fully parseable (no trailing commas, correct escaping)
-- Follow the schema EXACTLY (no extra keys anywhere)
-- The output must start with { and end with }
-- Violating any rule makes the response INVALID
+1. Return ONLY valid JSON.
+2. No Markdown formatting in the strings (No **bold**, No \`code\`, No # Headings).
+3. The output must be a single JSON object matching this schema exactly:
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-REQUIRED JSON SCHEMA (STRICT)
-━━━━━━━━━━━━━━━━━━━━━━━━━━
 {
-  "title": string,
-  "objectives": string[],
+  "title": "Lesson Title",
+  "objectives": ["Actionable objective 1", "Actionable objective 2"],
   "content": [
     {
-      "type": "heading",
-      "text": string
-    },
-    {
-      "type": "paragraph",
-      "text": string
-    },
-    {
-      "type": "list",
-      "items": string[]
-    },
-    {
-      "type": "code",
-      "language": string,
-      "text": string
-    },
-    {
-      "type": "video",
-      "query": string
-    },
-    {
-      "type": "mcq",
-      "question": string,
-      "options": string[],
-      "answer": number,
-      "explanation": string
+      "type": "heading" | "paragraph" | "list" | "code" | "video" | "mcq",
+      ... fields specific to type
     }
   ]
 }
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-CONTENT FORMATTING RULES (CRITICAL)
+WRITING STYLE GUIDE (CRITICAL)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-1) ALL CONTENT MUST BE PLAIN TEXT - NO MARKDOWN:
-- NO asterisks (**bold**), underscores (_italic_), or backticks (\`code\`)
-- NO markdown headings (##, ###)
-- NO markdown links ([text](url))
-- NO markdown formatting of any kind
-- Escape any backslashes that would appear in code/text
-
-2) BULLET LIST HANDLING:
-- If content naturally contains multiple items or bullet points, use "type": "list"
-- The "items" array must contain plain strings (NO markdown, NO asterisks)
-- Example: ["First item", "Second item", "Third item"] NOT ["* First item", "* Second item"]
-
-3) TERMINAL/BASH COMMANDS:
-- All terminal/bash commands must use "type": "code" with "language": "bash"
-- Include complete, executable commands
-- Do NOT include commands in paragraph blocks
+1. **Direct & Conversational:** Use "You" and "Your". Speak directly to the learner.
+2. **The "Why" First:** Always explain *why* a concept matters before showing *how* to do it.
+3. **No Fluff:** Avoid phrases like "In this digital age" or "Let's dive in." Start strong.
+4. **Visual Writing:** Use lists and short paragraphs to break up walls of text.
+5. **Real-World Focus:** Don't just show syntax; show a real scenario where this is used.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-ANTI-VAGUENESS + PROFESSIONAL QUALITY (CRITICAL)
+CONTENT ARRAY LOGIC
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-- Be concrete and specific. Avoid filler phrases like: "etc", "and so on", "various", "somehow", "it depends" (unless you also state exactly what it depends on).
-- Prefer precise definitions, decision rules, and step-by-step reasoning.
-- Include real-world constraints and trade-offs where relevant.
-- Include best practices and common failure modes.
-- All claims should be actionable: show how to do it, how to verify it, and what mistakes to avoid.
+You must generate a rich, long-form lesson by adding objects to the \`content\` array in this specific order:
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-CODING DETECTION + CODE POLICY (STRICT)
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-1) Determine whether this is a coding lesson based primarily on the lesson title.
-Treat it as CODING if the lesson title clearly implies programming or implementation work, for example it includes words like:
-"code", "coding", "implement", "build", "develop", "program", "algorithm", "data structure", "API", "SDK", "library", "framework",
-"debug", "refactor", "deploy", "compile", "runtime", "backend", "frontend", "database", "SQL", "C++", "Python", "JavaScript", "TypeScript", "Java", "C#", "Go", "Rust".
-If the lesson title is not clearly coding-oriented, treat it as NON-CODING even if the overall course might be technical.
-
-2) If NON-CODING:
-- DO NOT include any content blocks with type "code" (except bash/terminal commands if needed).
-- Keep the lesson fully domain-appropriate (no forced programming).
-
-3) If CODING:
-- Include 2 to 4 code blocks (plus any bash/terminal command blocks as needed).
-- Code must be correct, realistic, and relevant to the lesson.
-- Code must include brief comments for clarity.
-- Do not include code in paragraph blocks.
-
-4) Coding language selection:
-- If a programming language is explicitly mentioned in the courseTitle, moduleTitle, or lessonTitle, use ONLY that language in ALL code blocks (except bash blocks).
-- If no language is mentioned anywhere, default ALL programming code blocks to C++ and set "language": "cpp".
-- Terminal/bash commands always use "language": "bash".
-- Never switch programming languages mid-lesson.
-
-
-5) MCQ: 
-  - The MCQ question must be clear and specific.
-  - The MCQ options must be clear and specific.
-  - The MCQ answer must be a number between 1 and 4.
-  - The MCQ explanation must be clear and specific.
-  - There should be Minimum 5 MCQs per lesson.
+1. **Introduction (Heading + Paragraphs):** Hook the reader. What problem are we solving?
+2. **The Core Concept (Heading + Paragraphs + List):** Explain the theory clearly.
+3. **Practical Application (Heading + Code/BASH):** Show it in action.
+   - *Logic:* If the lesson is technical, you MUST include code blocks.
+   - *Logic:* If specific language is in the title (e.g., "React", "Python"), use it.
+   - *Logic:* If NO language is specified in Course/Module/Lesson titles, **DEFAULT TO C++**.
+   - *Logic:* For terminal commands, use "type": "code" and "language": "bash".
+4. **Common Pitfalls (Heading + Paragraphs):** What mistakes do beginners make? How do we avoid them?
+5. **Video Resource (Video):** 
+   - Add one \`{ "type": "video", "query": "string" }\` object.
+   - The \`query\` must be a perfect YouTube search term for this specific topic.
+6. **Knowledge Check (MCQs):**
+   - You MUST append exactly **5 MCQ objects** at the end of the content array.
+   - Schema: \`{ "type": "mcq", "question": "...", "options": ["A", "B", "C", "D"], "answer": 1, "explanation": "..." }\`
+   - \`answer\` is the 1-based index of the correct option (1, 2, 3, or 4).
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-STRUCTURE RULES (HARD REQUIREMENTS)
+DATA TYPES & RESTRICTIONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-- The lesson MUST be long-form and in-depth.
-- Content must read like a polished chapter with a clear narrative and progression.
-- Flow MUST be:
-  fundamentals → deeper concepts → real-world usage → brief wrap-up/transition → video → MCQs
-- Use appropriate content types: headings for sections, paragraphs for explanations, lists for multiple items, code blocks for code/commands.
+- **type: "heading"** -> \`{ "type": "heading", "text": "Section Title" }\`
+- **type: "paragraph"** -> \`{ "type": "paragraph", "text": "Plain text content." }\` (No Markdown)
+- **type: "list"** -> \`{ "type": "list", "items": ["Item 1", "Item 2"] }\` (Plain text items)
+- **type: "code"** -> \`{ "type": "code", "language": "cpp" | "javascript" | "python" | "bash" | etc, "text": "code_snippet" }\`
+- **type: "video"** -> \`{ "type": "video", "query": "exact search term" }\`
+- **type: "mcq"** -> (As defined above)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-FINAL INSTRUCTION
+FINAL CHECKLIST
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-Generate the lesson now.
-Return ONLY valid JSON.
+- [ ] Is the content engaging and non-robotic?
+- [ ] Did I use C++ if no other language was found?
+- [ ] Are there exactly 5 MCQs at the end?
+- [ ] Is the output pure valid JSON with NO markdown formatting in text fields?
+
+Generate the JSON now.
 `;

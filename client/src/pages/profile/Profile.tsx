@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,8 +18,10 @@ import type { RootState } from "@/store/store";
 import { getImageUrl } from "@/utils/getImageUrl";
 import useFetchCoursesWithStats from "@/hooks/courses/useFetchCoursesWithStats";
 import useDeleteCourse from "@/hooks/courses/useDeleteCourse";
-import { Loader2, BookOpen, Trophy, Clock, Upload } from "lucide-react";
+import { Loader2, BookOpen, Trophy, Clock, Upload, Trash2 } from "lucide-react";
 import useAvatarUpload from "@/hooks/user/useAvatarUpload";
+import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 export default function Profile() {
   const stateUser = useSelector((state: RootState) => state.user);
@@ -32,7 +34,12 @@ export default function Profile() {
       : "",
   };
 
-  console.log("USER: ", user);
+  const [deletingCourseSlug, setDeletingCourseSlug] = useState<string | null>(
+    null,
+  );
+  const [expandedDescriptions, setExpandedDescriptions] = useState<
+    Record<string, boolean>
+  >({});
 
   const { coursesWithStatsData, isLoading, error } = useFetchCoursesWithStats();
   const { mutateAsync: deleteCourse, isPending: deleteCoursePending } =
@@ -55,8 +62,17 @@ export default function Profile() {
     ];
   }, [courses]);
 
+  const toggleDescription = (courseId: string) => {
+    setExpandedDescriptions((prev) => ({
+      ...prev,
+      [courseId]: !prev[courseId],
+    }));
+  };
+
   const handleDeleteCourse = async (courseId: string) => {
+    setDeletingCourseSlug(courseId);
     await deleteCourse(courseId);
+    setDeletingCourseSlug(null);
   };
 
   if (error) {
@@ -174,93 +190,191 @@ export default function Profile() {
         })}
       </div>
 
+      <div className="space-y-1">
+        <h2 className="text-2xl font-semibold tracking-tight">Your Courses</h2>
+        <p className="text-sm text-muted-foreground">
+          Track progress, explore modules, and continue learning
+        </p>
+      </div>
+
       {/* COURSES */}
-      <Card className="border-border/60 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold tracking-tight">
-            Your Courses
-          </CardTitle>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          {isLoading ? (
-            <>
-              {[...Array(3)].map((_, i) => (
-                <div
-                  key={i}
-                  className="rounded-xl border border-border/60 p-5 space-y-3"
-                >
-                  <Skeleton className="h-5 w-48" />
-                  <Skeleton className="h-3 w-full" />
-                  <Skeleton className="h-3 w-5/6" />
-                </div>
-              ))}
-            </>
-          ) : courses.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              No courses yet. Start learning to see progress here.
-            </div>
-          ) : (
-            <Accordion type="multiple" className="space-y-4">
-              {courses.map((course) => (
-                <AccordionItem
-                  key={course.id}
-                  value={`course-${course.id}`}
-                  className="group rounded-xl border border-border/60 bg-card hover:bg-accent/40 transition-colors"
-                >
-                  <div className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
-                    <AccordionTrigger className="text-left text-base font-medium hover:no-underline">
+      {courses.length > 0 ? (
+        <Accordion type="single" collapsible className="space-y-6">
+          {courses.map((course) => (
+            <AccordionItem
+              key={course.id}
+              value={course.id}
+              className="rounded-2xl border border-border/60 bg-card"
+            >
+              <AccordionTrigger className="px-6 py-5 hover:no-underline">
+                <div className="flex w-full items-start justify-between gap-6">
+                  {/* LEFT */}
+                  <div className="space-y-2 text-left max-w-2xl">
+                    <h3 className="text-lg font-semibold leading-snug">
                       {course.title}
-                    </AccordionTrigger>
+                    </h3>
 
-                    <div className="flex items-center gap-4 w-full md:w-auto">
-                      <div className="flex-1 md:w-48">
-                        <Progress value={course.stats.progress} />
-                      </div>
+                    {/* DESCRIPTION */}
+                    <p
+                      className={cn(
+                        "text-sm text-muted-foreground transition-all",
+                        !expandedDescriptions[course.id] && "line-clamp-2",
+                      )}
+                    >
+                      {course.description}
+                    </p>
 
-                      <Badge variant="secondary" className="font-medium">
-                        {course.stats.progress}%
-                      </Badge>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleDescription(course.id);
+                      }}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      {expandedDescriptions[course.id]
+                        ? "View less"
+                        : "View more"}
+                    </button>
 
-                      <Button
-                        onClick={() => handleDeleteCourse(course.slug)}
-                        variant="ghost"
-                        disabled={deleteCoursePending}
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                      >
-                        {deleteCoursePending ? (
-                          <Loader2 className="animate-spin h-4 w-4" />
-                        ) : (
-                          "Delete"
-                        )}
-                      </Button>
+                    {/* TARGET AUDIENCE */}
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {course.targetAudience.slice(0, 3).map((aud) => (
+                        <Badge key={aud} variant="secondary">
+                          {aud}
+                        </Badge>
+                      ))}
+
+                      {course.targetAudience.length > 3 && (
+                        <Badge variant="outline">
+                          +{course.targetAudience.length - 3} more
+                        </Badge>
+                      )}
+
+                      <Badge variant="outline">{course.intentCategory}</Badge>
                     </div>
                   </div>
 
-                  <AccordionContent className="px-5 pb-5">
-                    <div className="grid gap-4 md:grid-cols-2">
-                      {course.modules.map((module, idx) => (
-                        <div
-                          key={idx}
-                          className="rounded-lg border border-border/60 bg-muted/40 p-4"
-                        >
-                          <p className="font-semibold mb-2">{module.title}</p>
-                          <ul className="space-y-1 text-sm text-muted-foreground">
-                            {module.lessons.map((lesson, i) => (
-                              <li key={i}>• {lesson.title}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
+                  {/* RIGHT */}
+                  <div className="flex flex-col items-end gap-3 min-w-[200px]">
+                    <div className="w-full space-y-1">
+                      <Progress value={course.stats.progress} />
+                      <p className="text-xs text-muted-foreground text-right">
+                        {course.stats.completedLessons}/
+                        {course.stats.totalLessons} lessons
+                      </p>
                     </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          )}
-        </CardContent>
-      </Card>
+
+                    <p className="text-xs text-muted-foreground">
+                      ⏱ {course.estimatedDuration} mins
+                    </p>
+
+                    {/* DELETE */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteCourse(course.slug);
+                      }}
+                      disabled={
+                        deleteCoursePending &&
+                        deletingCourseSlug === course.slug
+                      }
+                      className="text-destructive hover:text-destructive cursor-pointer"
+                    >
+                      {deleteCoursePending &&
+                      deletingCourseSlug === course.slug ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-6 pb-6">
+                <Accordion type="multiple" className="space-y-4">
+                  {course.modules.map((module) => (
+                    <AccordionItem
+                      key={module.id}
+                      value={module.id}
+                      className="rounded-xl border border-border/60"
+                    >
+                      <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                        <div className="flex w-full items-center justify-between">
+                          <div className="text-left space-y-1">
+                            <p className="font-medium">{module.title}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {module.description}
+                            </p>
+                          </div>
+
+                          <Badge
+                            variant={
+                              module.isCompleted ? "default" : "secondary"
+                            }
+                          >
+                            {module.isCompleted ? "Completed" : "In Progress"}
+                          </Badge>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4">
+                        <div className="space-y-2">
+                          {module.lessons.map((lesson) => (
+                            <div
+                              key={lesson._id}
+                              className="
+                        flex items-start justify-between
+                        rounded-lg border border-border/50
+                        bg-muted/40 px-4 py-3
+                      "
+                            >
+                              <div className="space-y-1">
+                                <p className="text-sm font-medium">
+                                  {lesson.title}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {lesson.description}
+                                </p>
+                              </div>
+
+                              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                <span>{lesson.estimatedMinutes} min</span>
+                                {lesson.isCompleted && (
+                                  <Badge variant="outline">Done</Badge>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      ) : (
+        <div className="flex h-full flex-col items-center justify-center gap-3 py-16 text-center">
+          <div className="rounded-full bg-muted p-4">
+            <BookOpen className="h-6 w-6 text-muted-foreground" />
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-lg font-medium">No courses yet</p>
+            <p className="text-sm text-muted-foreground max-w-sm">
+              Start by creating your first course and begin tracking progress
+              here.
+            </p>
+          </div>
+
+          <Button asChild className="mt-2">
+            <Link to="/">Create your first course</Link>
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
